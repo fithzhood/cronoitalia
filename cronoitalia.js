@@ -840,6 +840,13 @@ window.addEventListener('resize', () => {
 
 /* ================= avvio ================= */
 
+// Dentro l'APK serve spazio per la barra di stato: il CSS lo aggiunge a questa
+// classe, e nel browser non cambia niente.
+function inApp() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+if (inApp()) document.body.classList.add('capacitor');
+
 disegnaSfondo();
 disegnaUnita();
 disegnaCoste();

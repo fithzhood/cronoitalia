@@ -367,6 +367,13 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   #cardVox { height: 170px; }
 }
 
+/* Dentro l'APK Android 15 la finestra è edge-to-edge: senza questo, legenda e
+   contatore finiscono sotto la barra di stato. */
+body.capacitor #legend { top: calc(max(env(safe-area-inset-top, 0px), 24px) + 6px); }
+body.capacitor #yearCounter { top: calc(max(env(safe-area-inset-top, 0px), 24px) + 4px); }
+body.capacitor #returnBtn { top: calc(max(env(safe-area-inset-top, 0px), 24px) + 96px); }
+body.capacitor #brand { top: calc(max(env(safe-area-inset-top, 0px), 24px) + 6px); }
+
 /* Schermi bassi (telefono in orizzontale): la cronaca sparisce, resta la carta. */
 @media (max-height: 460px) {
   #eventLog { display: none; }
