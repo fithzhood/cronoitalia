@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0d1420">
 <title>CronoItalia</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇮🇹</text></svg>">
-<link rel="stylesheet" href="cronoitalia.css?v=3">
+<link rel="stylesheet" href="cronoitalia.css?v=4">
 </head>
 <body>
 
@@ -27,6 +27,7 @@
   <g id="units"></g>
   <path id="coste"></path>
   <path id="confProv" class="hidden"></path>
+  <path id="confReg" class="hidden"></path>
   <path id="confStato"></path>
   <g id="routes"></g>
   <g id="glow"></g>
@@ -62,6 +63,8 @@
   <div class="row">
     <input type="number" id="yearField" min="1" max="12000" value="2026">
     <select id="eraSelect"><option value="dC">d.C.</option><option value="aC">a.C.</option></select>
+    <input type="text" id="placeField" list="luoghiList" placeholder="Luogo (facoltativo)" autocomplete="off" spellcheck="false">
+    <datalist id="luoghiList"></datalist>
     <button id="travelBtn" disabled>Viaggia</button>
   </div>
 </div>
@@ -100,7 +103,9 @@
 <script src="cronoitalia-map.js?v=1"></script>
 <script src="cronoitalia-stati.js?v=2"></script>
 <script src="cronoitalia-data.js?v=2"></script>
-<script src="cronoitalia-voxel.js?v=3"></script>
-<script src="cronoitalia.js?v=5"></script>
+<script src="cronoitalia-voxel.js?v=4"></script>
+<script src="cronoitalia-scene.js?v=1"></script>
+<script src="cronoitalia-scene2.js?v=1"></script>
+<script src="cronoitalia.js?v=6"></script>
 </body>
 </html>

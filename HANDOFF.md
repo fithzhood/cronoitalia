@@ -37,7 +37,9 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | `cronoitalia-map.js` | 164 KB | **Topologia**: 481 archi, 132 unità, sfondo |
 | `cronoitalia-stati.js` | — | **26 epoche** politiche, dal 800 a.C. a oggi |
 | `cronoitalia-data.js` | 123 KB | **498 eventi**, dal 12000 a.C. al 2021, 17 con rotta |
-| `cronoitalia-voxel.js` | — | Motore diorami: **36 scene firma** + 7 per tipo |
+| `cronoitalia-voxel.js` | — | Motore diorami + kit di elementi riusabili + 36 scene firma |
+| `cronoitalia-scene.js` | — | **80 scene firma**: preistoria, antichità, medioevo, Rinascimento |
+| `cronoitalia-scene2.js` | — | **50 scene firma**: dal Cinquecento a oggi |
 | `vendor/three.min.js` | 654 KB | three.js r160 (l'ultima build UMD, quindi `<script>` normale) |
 
 ### Strumenti (`tools/`, da lanciare con node dalla cartella dell'app)
@@ -48,6 +50,7 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | `node tools/merge-eventi.js [--prova]` | Fonde i lotti `tools/new-eventi-*.js` nel dataset, validando prima di scrivere |
 | `node tools/check-stati.js` | Nessuna provincia senza stato, nessuna in due stati |
 | `node tools/check-colori.js` | Nessuna coppia di stati **confinanti** con colori confondibili |
+| `node tools/check-scene.js` | Colori inesistenti nelle scene, scene senza evento, copertura |
 | `VoxScena.smoke()` in console | Costruisce tutte le scene a più istanti e riporta gli errori |
 
 **Falli girare tutti dopo ogni modifica ai dati o alle scene.** Hanno già trovato
@@ -97,6 +100,15 @@ configurazione vale fino all'epoca successiva. `prov: true` accende i confini di
 provincia (dal 1861). Prima dell'800 a.C. non c'è epoca: tutto neutro,
 "Preistoria".
 
+### 2b. Tre livelli di confine
+
+Gli archi si smistano in tre gruppi a ogni cambio d'epoca: fra stati diversi il
+**confine di stato** (spesso e scurissimo), dentro lo stesso stato ma fra regioni
+diverse il **confine di regione** (scuro, medio), il resto sono **confini di
+provincia** (sottili e chiari, e facoltativi con la casella nella legenda).
+Le regioni compaiono solo da quando `era.prov` è vero, cioè dal 1861: prima non
+esistevano, e disegnarle darebbe una carta mai esistita.
+
 ### 3. Tutto dipende dall'anno corrente
 
 Carta politica, marcatori, cronaca e contatore sono funzione pura di `pb.cur`.
@@ -133,14 +145,19 @@ Due sole mesh, per reggere sul telefono:
 Niente `instanceColor`: raggruppare per colore evita di dipendere da come le
 varie build di three gestiscono i colori per istanza.
 
-**Scene firma (36):** otzi, nuraghi, canne, appia, annibale, colosseo,
-roma-fondazione, pompei, alarico, ravenna-mosaici, benedetto, palermo-emirato,
-legnano, castel-del-monte, meloria, venezia-origini, cupola, cenacolo, colombo,
-sistina, sacco-roma, lepanto, galileo-cannocchiale, reggia-caserta, volta,
-cinque-giornate, mille, teano, porta-pia, marconi, messina-1908, caporetto,
-liberazione, alluvione-firenze, vajont, autosole.
+**166 scene su misura su 498 eventi: una su tre.** Le altre usano la scena per
+tipo, variata dal generatore seminato sull'id. Le scene stanno in tre file:
+le prime 36 nel motore, poi `cronoitalia-scene.js` (fino al Rinascimento) e
+`cronoitalia-scene2.js` (dal Cinquecento). Si registrano con `VoxScena.registra`
+e attingono a `VoxScena.kit`, la libreria di elementi riusabili: `tempio`,
+`cattedrale`, `torre`, `mura`, `nave`, `folla`, `fuoco`, `bandiera`, `stelle`,
+`onde`, `fabbrica`, `ponte`, più `suolo`, `casa`, `albero`, `omino`. È il kit a
+rendere possibile una scena in dieci righe invece che in trenta.
+
 **Scene per tipo (7):** battaglia, guerra, viaggio, fondazione, scoperta,
-disastro, cultura.
+disastro, cultura. Sono la rete di sicurezza: qualunque evento senza scena
+propria ne riceve una comunque, diversa dalle altre dello stesso tipo perché il
+generatore pseudocasuale è seminato sull'id.
 
 ### Regole imparate costruendo le scene
 
@@ -203,9 +220,10 @@ rigenerare la geometria.
 
 ## Cosa manca / si può fare
 
-- **Altre scene firma.** Ce ne sono 36 su 498 eventi; le prossime papabili:
-  duomo-milano, montaperti, vespri, peste-nera (sobria), masaniello,
-  terremoto-1693, scala, mundial, capaci (sobria), codogno (sobria).
+- **Altre scene firma.** Sono 166 su 498: la copertura richiesta di un terzo è
+  raggiunta al pelo, e ogni evento aggiunto al dataset la fa scendere. Le
+  prossime papabili: scala, mundial, capaci (sobria), codogno (sobria),
+  internet-italia, basaglia, vespa, cinquecento, dolce-vita.
 - **Più eventi.** 498 coprono bene la penisola, ma il Sud interno e le isole
   possono ancora crescere, e il Novecento del design e della musica leggera è
   appena accennato.

@@ -5,8 +5,9 @@
   --mare-2: #0a1420;
   --terra-fuori: #1d2733;      /* terre non italiane, sfondo neutro */
   --costa: rgba(150, 190, 220, .35);
-  --conf-stato: rgba(12, 18, 26, .85);
-  --conf-prov: rgba(255, 255, 255, .16);
+  --conf-stato: rgba(10, 15, 22, .92);
+  --conf-reg: rgba(12, 18, 26, .8);
+  --conf-prov: rgba(255, 255, 255, .15);
   --oro: #d8b25a;
   --testo: #e8eef5;
   --testo-2: #9fb0c2;
@@ -52,9 +53,13 @@ html, body {
 #units path.spento { fill: var(--terra-fuori); }
 #units path.evidenzia { filter: brightness(1.35); }
 
+/* Tre livelli di confine, dal più leggero al più marcato: le province sono una
+   trama sottile e chiara, le regioni un tratto scuro, gli stati il più spesso. */
 #coste { fill: none; stroke: var(--costa); stroke-width: 1.1; vector-effect: non-scaling-stroke; }
-#confProv { fill: none; stroke: var(--conf-prov); stroke-width: .8; vector-effect: non-scaling-stroke; }
-#confStato { fill: none; stroke: var(--conf-stato); stroke-width: 1.9; vector-effect: non-scaling-stroke;
+#confProv { fill: none; stroke: var(--conf-prov); stroke-width: .7; vector-effect: non-scaling-stroke; }
+#confReg { fill: none; stroke: var(--conf-reg); stroke-width: 1.5; vector-effect: non-scaling-stroke;
+           stroke-linejoin: round; }
+#confStato { fill: none; stroke: var(--conf-stato); stroke-width: 2.4; vector-effect: non-scaling-stroke;
              stroke-linejoin: round; }
 
 #routes path {
@@ -136,7 +141,7 @@ html, body {
   z-index: 6; width: min(560px, calc(100vw - 28px)); padding: 14px 16px;
 }
 #hint { font-size: 13px; color: var(--testo-2); margin-bottom: 10px; text-align: center; }
-.row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.row { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 
 input[type=range] {
   flex: 1; -webkit-appearance: none; appearance: none; height: 4px;
@@ -153,13 +158,15 @@ input[type=range]::-moz-range-thumb {
   background: var(--oro); cursor: pointer;
 }
 
-input[type=number], select {
+input[type=number], input[type=text], select {
   background: rgba(255,255,255,.06); color: var(--testo);
   border: 1px solid var(--bordo); border-radius: 8px;
   padding: 7px 9px; font: inherit; font-size: 14px; width: 96px;
 }
 select { width: 78px; }
-input[type=number].scuote { animation: scuoti .3s; }
+#placeField { flex: 1 1 130px; min-width: 120px; width: auto; }
+#placeField::placeholder { color: var(--testo-2); opacity: .75; }
+input.scuote { animation: scuoti .3s; }
 @keyframes scuoti { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
 button {

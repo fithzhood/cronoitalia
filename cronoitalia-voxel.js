@@ -35,7 +35,9 @@ const P = {
   fuoco: 0xe8703a, brace: 0xf2b23a, lava: 0xd2452a,
   cenere: 0x6b6660, fumo: 0x8f8a86, polvere: 0xb5aa9a,
   tela: 0xd8cfb8, pelle: 0xc99a72, blu: 0x3a5fa8, viola: 0x7b5ea8,
-  divisa: 0x6b7358,
+  divisa: 0x6b7358, oliva: 0x7f8f42, grigioblu: 0x6c8296, grigioverde: 0x7d9188,
+  porpora: 0x8e3f68, sangue: 0x8c2f2a, ruggine: 0xa8552f, ottone: 0xc2a24a,
+  marrone: 0x96674a, senape: 0xb9a13e, corallo: 0xd9836a, menta: 0x6fbfa3,
   verdeIt: 0x3f9e5e, biancoIt: 0xf0f0ee, rossoIt: 0xc23b2f,
 };
 
@@ -121,6 +123,135 @@ function omino(d, x, y, z, cVeste, cPelle, s) {
   d(x, y, z, s, cVeste);
   d(x, y + s, z, s, cVeste);
   d(x, y + s * 2, z, s * .9, cPelle);
+}
+
+/* ---------------- elementi riusabili ----------------
+ *
+ * Sono i pezzi che tornano in decine di scene: un tempio, una cattedrale, una
+ * torre, una nave, una folla. Ogni scena firma diventa così una composizione di
+ * pochi elementi più l'idea che la distingue, invece di trenta righe di cubi
+ * ricopiati. */
+
+// Tempio a colonne con architrave e frontone: greco, romano o neoclassico.
+function tempio(m, x0, z0, cols, righe, h, c, cTetto) {
+  cTetto = cTetto || c;
+  for (let i = 0; i < cols; i++) for (let k = 0; k < righe; k++) {
+    if (k > 0 && k < righe - 1 && i > 0 && i < cols - 1) continue;
+    const x = x0 + i * 2, z = z0 + k * 2;
+    for (let y = 0; y < h; y++) m.p(x, 1 + y, z, c);
+  }
+  const w = (cols - 1) * 2, d = (righe - 1) * 2;
+  for (let x = x0 - 1; x <= x0 + w + 1; x++) for (let z = z0 - 1; z <= z0 + d + 1; z++) {
+    m.p(x, 0, z, c);                                   // il basamento
+    m.p(x, h + 1, z, cTetto);                          // l'architrave
+  }
+  for (let k = 1; k <= 2; k++)                         // il frontone
+    for (let x = x0 - 1 + k; x <= x0 + w + 1 - k; x++) m.p(x, h + 1 + k, z0 - 1 + k, cTetto);
+}
+
+// Chiesa con navata, abside e campanile a fianco.
+function cattedrale(m, x0, z0, w, d, h, cMuro, cTetto) {
+  m.guscio(x0, 1, z0, w, h, d, cMuro);
+  for (let k = 0; k < Math.ceil(w / 2); k++)
+    for (let x = x0 + k; x < x0 + w - k; x++) for (let z = z0; z < z0 + d; z++) {
+      if (x > x0 + k && x < x0 + w - k - 1) continue;
+      m.p(x, 1 + h + k, z, cTetto);
+    }
+  const cx = x0 - 2, cz = z0 + 1;                      // il campanile
+  for (let y = 0; y < h + 6; y++) m.p(cx, 1 + y, cz, y > h + 3 ? cTetto : cMuro);
+  m.p(cx, h + 7, cz, P.oro);
+}
+
+// Torre con merli, per rocche e cinte murarie.
+function torre(m, x, z, h, c, merli) {
+  for (let y = 0; y < h; y++) for (const [dx, dz] of [[0, 0], [1, 0], [0, 1], [1, 1]])
+    m.p(x + dx, 1 + y, z + dz, c);
+  if (merli !== false) for (const [dx, dz] of [[0, 0], [1, 1]]) m.p(x + dx, 1 + h, z + dz, c);
+}
+
+// Cinta muraria rettangolare con torri agli angoli.
+function mura(m, x0, z0, w, d, h, c) {
+  for (let x = x0; x < x0 + w; x++) for (const z of [z0, z0 + d - 1])
+    for (let y = 0; y < h; y++) m.p(x, 1 + y, z, y === h - 1 && x % 2 ? c : c);
+  for (let z = z0; z < z0 + d; z++) for (const x of [x0, x0 + w - 1])
+    for (let y = 0; y < h; y++) m.p(x, 1 + y, z, c);
+  for (let x = x0; x < x0 + w; x += 2) { m.p(x, 1 + h, z0, c); m.p(x, 1 + h, z0 + d - 1, c); }
+  for (let z = z0; z < z0 + d; z += 2) { m.p(x0, 1 + h, z, c); m.p(x0 + w - 1, 1 + h, z, c); }
+}
+
+// Nave animata: scafo, albero, vele, remi che battono. `verso` è +1 o -1.
+function nave(d, t, x, y, z, verso, lung, cScafo, cVela, remi) {
+  const beccheggio = Math.sin(t * 1.4 + x) * .12;
+  for (let i = 0; i < lung; i++) d(x + i * .85 * verso, y + beccheggio, z, 1, cScafo);
+  for (let i = 1; i < lung - 1; i++) d(x + i * .85 * verso, y + .9 + beccheggio, z, .8, cScafo);
+  const mx = x + (lung * .4) * .85 * verso;
+  for (let k = 0; k < 5; k++) d(mx, y + 1.6 + k + beccheggio, z, .4, P.tronco);
+  if (cVela) for (let k = 0; k < 3; k++) d(mx, y + 2.6 + k * 1.3 + beccheggio, z, 1.6 - k * .3, cVela);
+  if (remi) for (let i = 0; i < remi; i++) {
+    const r = Math.sin(t * 3.5 + i) * .45;
+    d(x + (1 + i * 1.5) * verso, y + .4, z + 1.1 + r, .45, P.legno);
+    d(x + (1 + i * 1.5) * verso, y + .4, z - 1.1 - r, .45, P.legno);
+  }
+}
+
+// Folla che salta e ondeggia attorno a un punto.
+function folla(d, t, cx, cz, n, r0, colori, y) {
+  for (let i = 0; i < n; i++) {
+    const a = i * 2.399, r = r0 + (i % 7) * .8;
+    omino(d, cx + Math.cos(a) * r, (y || 1.1) + Math.abs(Math.sin(t * 3 + i)) * .3,
+      cz + Math.sin(a) * r, colori[i % colori.length], P.pelle, .75);
+  }
+}
+
+// Colonna di fuoco e fumo che sale e si dirada.
+function fuoco(d, t, x, y, z, n, raggio, seme) {
+  for (let i = 0; i < n; i++) {
+    const f = ((t * .8 + i * (1 / n) + (seme || 0)) % 1);
+    d(x + Math.sin(i * 2.4 + t) * raggio * (.4 + f), y + f * (3 + raggio),
+      z + Math.cos(i * 1.7 + t) * raggio * (.4 + f),
+      1 - f * .55, f < .3 ? P.fuoco : f < .62 ? P.brace : P.fumo);
+  }
+}
+
+// Bandiera tricolore (o di altri colori) che sventola su un'asta.
+function bandiera(d, t, x, y, z, altezza, colori, seme) {
+  for (let k = 0; k < altezza; k++) d(x, y + k, z, .35, P.tronco);
+  const on = Math.sin(t * 3 + (seme || 0)) * .3;
+  for (let i = 0; i < colori.length; i++)
+    d(x + .7 + i * .7, y + altezza - .6 + on * i * .3, z + on * .3, .7, colori[i]);
+}
+
+// Cielo stellato per le scene notturne.
+function stelle(d, n, raggio, altezza) {
+  for (let i = 0; i < n; i++) {
+    const a = i * 2.399;
+    d(Math.cos(a) * (raggio + (i % 5)), altezza + (i % 7), Math.sin(a) * (raggio + (i % 5)),
+      .3, i % 4 ? P.biancoIt : P.oro);
+  }
+}
+
+// Superficie d'acqua animata, saltando un riquadro centrale (l'isola, la nave…).
+function onde(d, t, R, passo, salta) {
+  for (let x = -R; x <= R; x += passo) for (let z = -R; z <= R; z += passo) {
+    if (salta && Math.abs(x) <= salta[0] && Math.abs(z) <= salta[1]) continue;
+    d(x, .6 + Math.sin(t * 1.7 + x * .4 + z * .3) * .26, z, passo * .95, P.acquaChiara);
+  }
+}
+
+// Ciminiere fumanti: opifici, ferriere, centrali.
+function fabbrica(m, x0, z0, w, d, h, cMuro, ciminiere) {
+  m.guscio(x0, 1, z0, w, h, d, cMuro);
+  for (let x = x0; x < x0 + w; x++) for (let z = z0; z < z0 + d; z++) m.p(x, 1 + h, z, P.grigio);
+  for (let k = 0; k < (ciminiere || 2); k++) {
+    const cx = x0 + 1 + k * Math.max(2, Math.floor(w / (ciminiere || 2)));
+    for (let y = 0; y < h + 5; y++) m.p(cx, 1 + y, z0 + 1, P.cotto);
+  }
+}
+
+// Ponte ad arcate.
+function ponte(m, x0, z, lung, h, c) {
+  for (let x = x0; x < x0 + lung; x++) m.p(x, h, z, c);
+  for (let x = x0; x < x0 + lung; x += 3) for (let y = 1; y < h; y++) m.p(x, y, z, c);
 }
 
 /* ---------------- scene firma ---------------- */
@@ -1987,6 +2118,17 @@ function smoke() {
 // schermo, rotazione del telefono): il renderer non se ne accorge da solo.
 function ridimensiona() { if (renderer && canvasCorr) misura(); }
 
-return { play, stop, smoke, ridimensiona, FIRMA, TIPO };
+/* Le scene firma stanno in due file: quelle storiche qui sopra, le altre in
+   `cronoitalia-scene.js`, che le aggiunge con `registra`. Sono troppe perché
+   stiano tutte in un file solo e restino leggibili. */
+function registra(nuove) { Object.assign(FIRMA, nuove); }
+
+const kit = {
+  Mondo, suolo, suoloParziale, albero, casa, omino, clamp01,
+  tempio, cattedrale, torre, mura, nave, folla, fuoco, bandiera, stelle, onde,
+  fabbrica, ponte,
+};
+
+return { play, stop, smoke, ridimensiona, registra, P, kit, FIRMA, TIPO };
 
 })();

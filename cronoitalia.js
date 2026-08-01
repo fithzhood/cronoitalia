@@ -93,6 +93,7 @@ const ctxG = document.getElementById('ctx');
 const unitsG = document.getElementById('units');
 const costeP = document.getElementById('coste');
 const confProvP = document.getElementById('confProv');
+const confRegP = document.getElementById('confReg');
 const confStatoP = document.getElementById('confStato');
 const routesG = document.getElementById('routes');
 const overlay = document.getElementById('overlay');
@@ -133,6 +134,9 @@ const legendNote = document.getElementById('legendNote');
 const legendList = document.getElementById('legendList');
 const legendToggle = document.getElementById('legendToggle');
 const provChk = document.getElementById('provChk');
+const provRow = document.getElementById('provRow');
+const placeField = document.getElementById('placeField');
+const luoghiList = document.getElementById('luoghiList');
 
 const SVGNS = 'http://www.w3.org/2000/svg';
 
@@ -217,6 +221,7 @@ function disegnaCoste() {
 let eraCorr = undefined;          // indice epoca attualmente disegnata
 let statoDi = new Array(UNITS.length).fill(null);
 let evidenziato = null;
+let regioniVisibili = false;
 
 const unitaPerCodice = new Map(UNITS.map((u, i) => [u.id, i]));
 
@@ -249,16 +254,26 @@ function applicaPolitica(anno, conStriscione) {
     unitPaths[i].style.fill = st ? st.c : '';
   }
 
-  let dStato = '', dProv = '';
+  /* Tre livelli: fra stati diversi il confine di stato, dentro lo stesso stato
+     ma fra regioni diverse quello di regione, e il resto sono confini di
+     provincia. Le regioni contano solo a unità unificata: prima del 1861 non
+     erano niente, e disegnarle darebbe una carta che non è mai esistita. */
+  let dStato = '', dReg = '', dProv = '';
   for (let i = 0; i < ARCS.length; i++) {
     const [a, b] = ARC_OWN[i];
     if (b < 0) continue;
-    if (statoDi[a] !== statoDi[b]) dStato += arcoD(i); else dProv += arcoD(i);
+    if (statoDi[a] !== statoDi[b]) dStato += arcoD(i);
+    else if (UNITS[a].reg !== UNITS[b].reg) dReg += arcoD(i);
+    else dProv += arcoD(i);
   }
   confStatoP.setAttribute('d', dStato);
+  confRegP.setAttribute('d', dReg);
   confProvP.setAttribute('d', dProv);
 
-  provChk.checked = !!(era && era.prov);
+  regioniVisibili = !!(era && era.prov);
+  confRegP.classList.toggle('hidden', !regioniVisibili);
+  provRow.classList.toggle('hidden', !regioniVisibili);
+  if (!regioniVisibili) provChk.checked = false;
   aggiornaProvince();
   costruisciLegenda(era);
   evidenzia(null);
@@ -446,6 +461,8 @@ function impostaDestinazione(lat, lon) {
   hintEl.textContent = u
     ? `Destinazione: ${u.n}${u.reg ? ' (' + u.reg + ')' : ''} — pronti a partire.`
     : `Destinazione: ${lat.toFixed(2)}°, ${lon.toFixed(2)}° — pronti a partire.`;
+  // il campo del luogo segue il clic sulla mappa, così i due modi restano allineati
+  if (u && document.activeElement !== placeField) placeField.value = u.n;
 }
 
 // Quale provincia sta sotto un punto: serve solo per l'etichetta, quindi basta
@@ -458,6 +475,101 @@ function unitaSotto(lat, lon) {
   }
   return best;
 }
+
+/* ---------- il campo del luogo ---------- */
+
+/* L'elenco non è una lista scritta a mano: province e regioni escono dalla
+   geometria (nomi e centri sono già in UNITS), e a mano si aggiungono solo le
+   località celebri che non danno il nome a una provincia. */
+const LUOGHI_EXTRA = [
+  ['Pompei', 40.75, 14.49], ['Ercolano', 40.81, 14.35], ['Ostia', 41.75, 12.29],
+  ['Vesuvio', 40.82, 14.43], ['Etna', 37.75, 14.99], ['Stromboli', 38.79, 15.21],
+  ['Capri', 40.55, 14.24], ['Ischia', 40.73, 13.90], ['Amalfi', 40.63, 14.60],
+  ['Paestum', 40.42, 15.01], ['Montecassino', 41.49, 13.81], ['Tivoli', 41.94, 12.77],
+  ['Assisi', 43.07, 12.61], ['Orvieto', 42.72, 12.11], ['Gubbio', 43.35, 12.58],
+  ['Urbino', 43.73, 12.64], ['Cortona', 43.27, 11.99], ['Montalcino', 43.06, 11.49],
+  ['San Gimignano', 43.47, 11.04], ['Carrara', 44.08, 10.10], ['Portofino', 44.30, 9.21],
+  ['Sanremo', 43.82, 7.78], ['Cinque Terre', 44.13, 9.71], ['Cortina', 46.54, 12.14],
+  ['Aquileia', 45.77, 13.37], ['Cividale', 46.09, 13.43], ['Caporetto', 46.25, 13.58],
+  ['Monte Bianco', 45.83, 6.86], ['Gran Sasso', 42.47, 13.57], ['Lago di Garda', 45.60, 10.65],
+  ['Lago di Como', 45.98, 9.26], ['Alberobello', 40.79, 17.24], ['Otranto', 40.15, 18.49],
+  ['Matera', 40.67, 16.60], ['Tropea', 38.68, 15.90], ['Taormina', 37.85, 15.29],
+  ['Monreale', 38.08, 13.29], ['Cefalù', 38.04, 14.02], ['Erice', 37.93, 12.59],
+  ['Selinunte', 37.58, 12.83], ['Segesta', 37.94, 12.83], ['Noto', 36.89, 15.07],
+  ['Lampedusa', 35.51, 12.60], ['Barumini', 39.70, 8.99], ['Caprera', 41.20, 9.47],
+  ['Marsala', 37.80, 12.44], ['Quarto', 44.39, 8.99], ['Solferino', 45.37, 10.57],
+  ['Marengo', 44.87, 8.71], ['Legnano', 45.60, 8.92], ['Anzio', 41.45, 12.63],
+  ['Vittorio Veneto', 45.98, 12.30], ['Longarone', 46.27, 12.33], ['Codogno', 45.16, 9.70],
+  ['Amatrice', 42.63, 13.29], ['Città del Vaticano', 41.90, 12.45], ['San Marino', 43.94, 12.45],
+];
+
+const luoghi = [];                 // {nome, chiave, lat, lon}
+// Confronto senza accenti, spazi e apostrofi: "citta di castello" trova
+// "Città di Castello", "valle daosta" trova "Valle d'Aosta".
+const SENZA_ACCENTO = { 'à': 'a', 'á': 'a', 'â': 'a', 'è': 'e', 'é': 'e', 'ê': 'e',
+  'ì': 'i', 'í': 'i', 'î': 'i', 'ò': 'o', 'ó': 'o', 'ô': 'o', 'ù': 'u', 'ú': 'u',
+  'û': 'u', 'ü': 'u', 'ö': 'o', 'ä': 'a', 'ç': 'c', 'š': 's', 'ž': 'z', 'ć': 'c', 'đ': 'd' };
+function chiaveLuogo(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, c => SENZA_ACCENTO[c] || '');
+}
+function aggiungiLuogo(nome, lat, lon) {
+  luoghi.push({ nome, chiave: chiaveLuogo(nome), lat, lon });
+}
+
+function costruisciLuoghi() {
+  for (const u of UNITS) aggiungiLuogo(u.n, u.c[1], u.c[0]);
+  const perRegione = new Map();
+  for (const u of UNITS) {
+    if (!u.reg) continue;
+    if (!perRegione.has(u.reg)) perRegione.set(u.reg, []);
+    perRegione.get(u.reg).push(u.c);
+  }
+  for (const [reg, centri] of perRegione) {
+    const lat = centri.reduce((s, c) => s + c[1], 0) / centri.length;
+    const lon = centri.reduce((s, c) => s + c[0], 0) / centri.length;
+    aggiungiLuogo(reg, lat, lon);
+  }
+  for (const [nome, lat, lon] of LUOGHI_EXTRA) aggiungiLuogo(nome, lat, lon);
+
+  luoghi.sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
+  const frag = document.createDocumentFragment();
+  for (const l of luoghi) {
+    const o = document.createElement('option');
+    o.value = l.nome;
+    frag.appendChild(o);
+  }
+  luoghiList.appendChild(frag);
+}
+
+// Prima il nome esatto, poi chi comincia con quel che è stato scritto, infine
+// chi lo contiene: "regg" trova Reggio Emilia senza pescare Correggio.
+function cercaLuogo(testo) {
+  const k = chiaveLuogo(testo);
+  if (!k) return null;
+  return luoghi.find(l => l.chiave === k)
+    || luoghi.find(l => l.chiave.startsWith(k))
+    || luoghi.find(l => l.chiave.includes(k))
+    || null;
+}
+
+function leggiCampoLuogo() {
+  const testo = placeField.value.trim();
+  if (!testo) return;
+  const l = cercaLuogo(testo);
+  if (!l) {
+    placeField.classList.remove('scuote');
+    void placeField.offsetWidth;
+    placeField.classList.add('scuote');
+    hintEl.textContent = `"${testo}" non è nell'elenco: prova con una provincia, una regione o una località nota.`;
+    return;
+  }
+  // prima la destinazione, poi il nome: altrimenti impostaDestinazione
+  // riscriverebbe "Sicilia" con la provincia più vicina al centro dell'isola
+  impostaDestinazione(l.lat, l.lon);
+  placeField.value = l.nome;
+}
+placeField.addEventListener('change', leggiCampoLuogo);
+placeField.addEventListener('keydown', e => { if (e.key === 'Enter') leggiCampoLuogo(); });
 
 function impostaAnno(y, conStriscione) {
   if (y === 0) y = 1;
@@ -887,6 +999,7 @@ if (inApp()) {
 disegnaSfondo();
 disegnaUnita();
 disegnaCoste();
+costruisciLuoghi();
 inquadraCasa();
 if (window.innerWidth < 760) {          // su telefono la legenda parte chiusa
   legendEl.classList.add('chiusa');
