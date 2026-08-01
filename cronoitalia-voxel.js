@@ -118,12 +118,64 @@ function casa(m, x0, z0, w, d, h, cMuro, cTetto, y) {
   }
 }
 
-/* Omino di quattro blocchi: testa, corpo, due gambe accennate. */
+/* La coda del ciclo.
+ *
+ * Quasi tutte le scene fanno comparire le cose con lo stesso meccanismo: una
+ * `f` che scorre (`(t * .12) % 1.3`) e i pezzi che si accendono uno dopo
+ * l'altro quando `f` li supera. Il guaio è la fine: quando il modulo gira, `f`
+ * torna a zero e tutto sparisce nello stesso fotogramma. A occhio è un lampo —
+ * il plastico si spegne e si riaccende.
+ *
+ * Questo restituisce una `d` che nell'ultimo pezzo di ciclo rimpicciolisce i
+ * cubi fino a niente: il plastico si ritira invece di spegnersi, e quando `f`
+ * riparte non c'era comunque più nulla da far sparire. Costa una moltiplicazione
+ * per blocco e solo durante la coda: fuori dalla coda torna la `d` originale.
+ */
+function dissolvenza(d, f, periodo, coda) {
+  coda = coda || periodo * .09;
+  if (f < periodo - coda) return d;
+  const via = Math.max(0, (periodo - f) / coda);
+  return (x, y, z, s, c) => d(x, y, z, s * via, c);
+}
+
+/* L'arrivo di un pezzo.
+ *
+ * L'altra metà del problema che risolve `dissolvenza`: le cose non solo
+ * sparivano di colpo, comparivano di colpo. Un `if (f < i / n) continue` accende
+ * il pezzo numero i da un fotogramma all'altro, e una scena fatta solo di questi
+ * è una sequenza di apparizioni, non un'animazione.
+ *
+ * Con `p` che va da 0 a 1 il cubo scende dall'alto e cresce fino alla misura
+ * piena, con partenza e arrivo morbidi. A `p` pieno restituisce la `d`
+ * originale, così non costa niente quando il pezzo è già a posto.
+ */
+function arrivo(d, p, alto) {
+  if (p >= 1) return d;
+  const q = p * p * (3 - 2 * p);
+  const giu = (1 - q) * (alto || 2.5);
+  return (x, y, z, s, c) => d(x, y + giu, z, s * q, c);
+}
+
+/* L'ora della scena, aggiornata a ogni fotogramma dal ciclo. Serve ai pezzi del
+   kit che devono muoversi da soli pur non ricevendo `t` fra i parametri —
+   cioè agli omini. Fuori dal browser la impostano i controlli con
+   `VoxScena.tempo(t)`. */
+let orologio = 0;
+
+/* Una figura: due cubi di veste e uno di testa.
+ *
+ * Respira. Senza, metà dei plastici erano fotografie: file di persone immobili
+ * come birilli mentre attorno non si muoveva nient'altro. Il movimento è
+ * piccolo apposta (un ottavo di blocco), e la fase la dà la posizione, così
+ * dieci figure in fila non ondeggiano all'unisono come un coro. */
 function omino(d, x, y, z, cVeste, cPelle, s) {
   s = s || 1;
-  d(x, y, z, s, cVeste);
-  d(x, y + s, z, s, cVeste);
-  d(x, y + s * 2, z, s * .9, cPelle);
+  const fase = (x * 12.9898 + z * 78.233) % 6.283;
+  const su = Math.sin(orologio * 1.35 + fase) * .13 * s;
+  const on = Math.sin(orologio * .8 + fase * 1.7) * .09 * s;
+  d(x, y + su, z, s, cVeste);
+  d(x + on * .5, y + s + su, z, s, cVeste);
+  d(x + on, y + s * 2 + su, z, s * .9, cPelle);
 }
 
 /* ---------------- elementi riusabili ----------------
@@ -376,7 +428,9 @@ pompei(rng) {
       for (let i = 0; i < 40; i++) {
         const f = ((t * .18 + i * .07) % 1);
         const a = i * 1.7;
-        d(Math.cos(a) * (4 + i * .35), 24 - f * 22, -4 + Math.sin(a) * (3 + i * .3), .8, P.cenere);
+        // La cenere ricade dentro la piastra: con il raggio che cresceva con i
+        // arrivava a diciotto blocchi e la pioggia di cenere finiva sul nero.
+        d(Math.cos(a) * (4 + (i % 8) * .8), 24 - f * 22, -4 + Math.sin(a) * (2.5 + (i % 8) * .7), .8, P.cenere);
       }
     },
   };
@@ -433,9 +487,12 @@ colosseo(rng) {
       for (let z = -9; z <= 9; z++) albero(m, 9, z % 4 === 0 ? z : z + 1, 1, rng);
     },
     dinamici(d, t) {
-      // il solco dell'aratro che si allunga, e i buoi che tirano
+      /* Il solco dell'aratro che si allunga, e i buoi che tirano. In fondo alla
+         corsa il solco si richiude piano: prima spariva tutto in un fotogramma,
+         e sembrava che il plastico saltasse. */
       const avanti = (t * 2.2) % 20 - 10;
-      for (let x = -10; x < avanti; x++) d(x, 1.6, 6, .9, P.terraScura);
+      const via = avanti > 7 ? (10 - avanti) / 3 : 1;
+      for (let x = -10; x < avanti; x++) d(x, 1.6, 6, .9 * via, P.terraScura);
       omino(d, avanti, 2, 6, P.tela, P.pelle);
       d(avanti + 1.4, 2, 5.4, 1.2, P.terraScura);
       d(avanti + 1.4, 2, 6.6, 1.2, P.terraScura);
@@ -462,17 +519,19 @@ cupola(rng) {
         casa(m, Math.round(Math.cos(a) * 9) - 1, Math.round(Math.sin(a) * 9) - 1, 3, 3, 2, P.tela, P.tetto);
       }
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       // la cupola si chiude anello per anello, poi ricomincia
       const f = (t * .18) % 1.35;
+      const d = dissolvenza(d0, f, 1.35);   // il ciclo si ritira invece di spegnersi
       for (let y = 0; y < 7; y++) {
         const salita = clamp01((f - y * .13) * 6);
         if (salita <= 0) continue;
+        const da = arrivo(d, salita);
         const r = 6 - y * .8;
         const n = Math.max(6, Math.round(r * 6));
         for (let a = 0; a < n * salita; a++) {
           const an = a / n * Math.PI * 2;
-          d(Math.cos(an) * r, 9 + y, Math.sin(an) * r, 1, y % 2 ? P.tetto : P.cotto);
+          da(Math.cos(an) * r, 9 + y, Math.sin(an) * r, 1, y % 2 ? P.tetto : P.cotto);
         }
       }
       if (f > .95) { d(0, 16, 0, 1.4, P.marmo); d(0, 17.2, 0, .8, P.oro); }
@@ -507,7 +566,7 @@ cupola(rng) {
         if (Math.abs(x) <= 8 && Math.abs(z) <= 6) continue;      // non sotto l'isola
         d(x, .6 + Math.sin(t * 1.5 + x * .4 + z * .3) * .28, z, 1.9, P.acquaChiara);
       }
-      const gx = ((t * 2.4) % 26) - 13;             // la gondola che passa
+      const gx = ((t * 2.4) % 20) - 12;             // la gondola che passa, tutta dentro la laguna
       for (let i = 0; i < 5; i++) d(gx + i * .9, 1.2, 8, .8, P.nero);
       omino(d, gx + 4, 1.6, 8, P.rosso, P.pelle, .7);
     },
@@ -528,8 +587,9 @@ mille(rng) {
       for (let i = 0; i < 5; i++) albero(m, -10 + i * 5, 11, 2, rng);
       for (let x = -2; x <= 2; x++) for (let z = -2; z <= 3; z++) m.p(x, 1, z, P.legno);  // il pontile
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       const f = (t * .1) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       const sx = -11 + f * 8;                       // il piroscafo che accosta al pontile
       for (let i = 0; i < 9; i++) d(sx + i * .95, 1.3, -4, 1.1, P.nero);
       for (let i = 0; i < 5; i++) d(sx + 2 + i * .9, 2.3, -4, .9, P.grigio);
@@ -561,8 +621,9 @@ mille(rng) {
       for (let i = 0; i < 4; i++) casa(m, -9 + i * 2, -8 + i * 4, 3, 3, 2, P.tela, P.tetto);
       m.colonna(6, 5, 1, 5, P.marmo); m.p(6, 6, 5, P.oro);
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       const f = (t * .22) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       // le macerie della breccia si alzano e ricadono
       for (let i = 0; i < 26; i++) {
         const r = ((i * 7919) % 100) / 100;
@@ -632,7 +693,7 @@ marconi(rng) {
       // anelli d'onda che si allargano dall'antenna e svaniscono
       for (let k = 0; k < 4; k++) {
         const f = ((t * .35 + k * .25) % 1);
-        const r = 1 + f * 11;
+        const r = 1 + f * 8;                        // l'anello resta sopra il prato
         const n = Math.round(10 + r * 2.2);
         for (let a = 0; a < n; a++) {
           const an = a / n * Math.PI * 2;
@@ -668,10 +729,16 @@ marconi(rng) {
         if (crollo > .1) for (let k = 0; k < 3; k++)
           d(bx + ((k * 53) % 4) - 1, 1 + crollo * 1.5, bz + ((k * 71) % 4) - 1, .8, P.polvere);
       }
+      /* Il mare che si ritira: si abbassa e scorre verso il largo, ma senza
+         uscire dalla piastra — l'acqua che scivolava oltre il bordo restava
+         sospesa sul nero. */
       const ritiro = clamp01((f - .5) * 2.5);
       for (let x = -12; x <= 12; x += 2)
-        for (let z = 4; z <= 12; z += 2)
-          d(x, .6 - ritiro * 1.4 + Math.sin(t * 2 + x * .3) * .2, z + ritiro * 3, 1.9, P.acqua);
+        for (let z = 4; z <= 12; z += 2) {
+          const zz = z + ritiro * 3;
+          if (zz > 12) continue;
+          d(x, .6 - ritiro * 1.4 + Math.sin(t * 2 + x * .3) * .2, zz, 1.9, P.acqua);
+        }
     },
   };
 },
@@ -691,9 +758,11 @@ annibale(rng) {
       }
     },
     dinamici(d, t) {
-      // La colonna è lunga più della piastra: le posizioni si avvolgono, così
-      // nessuno finisce a marciare nel vuoto fuori dal plastico.
-      const giro = v => ((v + 13) % 26 + 26) % 26 - 13;
+      /* La colonna è lunga più della piastra: le posizioni si avvolgono, così
+         nessuno finisce a marciare nel vuoto fuori dal plastico. Il giro sta
+         entro ±10 e non ±13: l'elefante è lungo, e con la proboscide sporgeva
+         di tre blocchi oltre il bordo. */
+      const giro = v => ((v + 10) % 20 + 20) % 20 - 10;
       const marcia = giro(t * 1.4);
       for (let i = 0; i < 3; i++) {                 // gli elefanti
         const z = giro(marcia - i * 5);
@@ -733,7 +802,7 @@ autosole(rng) {
       const colori = [P.rossoIt, P.biancoIt, P.blu, P.oro, P.verdeIt];
       for (let i = 0; i < 8; i++) {
         const su = i % 2 === 0;
-        const z = ((t * (7 + i % 3) + i * 6) % 26) - 13;
+        const z = ((t * (7 + i % 3) + i * 6) % 22) - 11;   // l'auto è lunga due blocchi: si avvolge prima del bordo
         const zz = su ? z : -z;
         const x = su ? -1.6 : 1.6;
         const c = colori[i % colori.length];
@@ -769,9 +838,9 @@ otzi(rng) {
         const f = (t * .26 + i * .029) % 1;
         d(((i * 6151) % 25) - 12, 13 - f * 13, ((i * 3571) % 25) - 12, .45, P.neve);
       }
-      // vento: una velatura che passa
+      // vento: una velatura che passa, avvolgendosi dentro la sella
       for (let i = 0; i < 10; i++)
-        d(-12 + ((t * 4 + i * 2.6) % 26), 3 + Math.sin(t + i) * .6, -7 + i, 1.2, P.ghiaccio);
+        d(-12 + ((t * 4 + i * 2.6) % 24), 3 + Math.sin(t + i) * .6, -7 + i, 1.2, P.ghiaccio);
     },
   };
 },
@@ -871,17 +940,26 @@ appia(rng) {
       }
     },
     dinamici(d, t) {
-      const p = ((t * 2.2) % 26) - 13;                              // il carro
+      /* Carro e viandanti percorrono la via e ricompaiono dall'altro capo. Il
+         giro va scritto con il modulo raddrizzato: `(v % 26) - 13` su un v
+         negativo dà un resto negativo, e i viandanti finivano a diciannove
+         blocchi dal centro, sette oltre il bordo della piastra. */
+      const giro = v => ((v + 10) % 20 + 20) % 20 - 10;
+      const p = giro(t * 2.2);                                      // il carro
       const zc = p * .35 | 0;
       for (let i = 0; i < 4; i++) d(p + (i % 2) * 1.1, 3.4, zc + Math.floor(i / 2) * .9, 1, P.legno);
       d(p + .5, 4.3, zc + .4, .9, P.tela);
       d(p - 1.4, 3.2, zc - .3, 1, P.terraScura);
       d(p - 2.4, 3.2, zc - .3, 1, P.terraScura);
-      for (let i = 0; i < 5; i++)                                   // viandanti
-        omino(d, ((p + 7 + i * 3) % 26) - 13, 3, ((p + 7 + i * 3) % 26 - 13) * .35 - 1 | 0, P.tela, P.pelle, .8);
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {                                 // viandanti
+        const x = giro(p + 7 + i * 3);
+        omino(d, x, 3, x * .35 - 1 | 0, P.tela, P.pelle, .8);
+      }
+      for (let i = 0; i < 10; i++) {                                // la polvere dietro al carro
         const g = (t * .8 + i * .1) % 1;
-        d(p - 3 - g * 2, 3 + g, zc + .5, .7 * (1 - g), P.polvere);
+        const px = p - 3 - g * 2;
+        if (px < -11) continue;                                     // dove finisce la via finisce anche la polvere
+        d(px, 3 + g, zc + .5, .7 * (1 - g), P.polvere);
       }
     },
   };
@@ -943,10 +1021,11 @@ alarico(rng) {
       }
       for (let x = -9; x <= 9; x += 2) m.p(x, 11, 2, P.marmoOmbra);
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Le tessere calano riga per riga e compongono il fondo d'oro con la croce
          e la cornice, poi il ciclo ricomincia. */
       const f = (t * .14) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       const W = 15, H = 9;
       for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
         const arrivo = clamp01((f - (r * W + c) / (W * H)) * 18);
@@ -1127,12 +1206,13 @@ meloria(rng) {
     },
     dinamici(d, t) {
       const urto = Math.sin(t * .6) * 2.6;
-      // due file di galee che si vengono addosso, con i remi
+      /* Due file di galee che si vengono addosso, con i remi. Le galee sono
+         lunghe otto blocchi più il rostro: partendo da sei dal centro la prua
+         usciva dal mare e restava sospesa sul nero, così partono da tre. */
       for (let g = 0; g < 4; g++) {
         const z = -7 + g * 4.5;
         for (const lato of [-1, 1]) {
-          const cx = lato * (5.5 - urto * lato * lato) * (lato < 0 ? 1 : 1) + lato * urto * -1;
-          const base = lato * 6 - lato * urto;
+          const base = lato * (3 - urto * .5);
           for (let i = 0; i < 8; i++) d(base + lato * i * .9, 1.2, z, 1, lato < 0 ? P.legno : P.tronco);
           for (let i = 0; i < 5; i++) d(base + lato * (1 + i * .9), 2.1, z, .8, lato < 0 ? P.rosso : P.grigio);
           for (let i = 0; i < 4; i++) {                               // i remi
@@ -1198,10 +1278,11 @@ sistina(rng) {
       for (let x = -6; x <= 6; x++) for (let z = -3; z <= 1; z++) m.p(x, 8, z, P.legno);
       for (const x of [-6, -2, 2, 6]) for (let y = 1; y < 8; y++) { m.p(x, y, -3, P.tronco); m.p(x, y, 1, P.tronco); }
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Il colore compare sulla volta campata dopo campata, poi si spegne e
          Michelangelo ricomincia. */
       const f = (t * .13) % 1.2;
+      const d = dissolvenza(d0, f, 1.2);   // il ciclo si ritira invece di spegnersi
       const colori = [P.rosso, P.oro, P.blu, P.verdeIt, P.viola, P.tela];
       // z parte da -8: in JavaScript il resto di un negativo è negativo, e senza
       // riportarlo in campo l'indice del colore diventa undefined.
@@ -1245,8 +1326,11 @@ colombo(rng) {
         for (let k = 0; k < 3; k++) d(sx + mx, 3.6 + k * 1.4, 0, 1.5 - k * .25, P.tela);
       }
       d(sx + 3.2, 9.4, 0, .5, P.rossoIt);
-      for (let i = 0; i < 12; i++)                                    // la scia
-        d(sx + 6 + i * .8, .8, Math.sin(i * .8) * .5, 1.1 * (1 - i / 14), P.acquaChiara);
+      for (let i = 0; i < 12; i++) {                                  // la scia, fin dove c'è mare
+        const wx = sx + 6 + i * .8;
+        if (wx > 11) continue;
+        d(wx, .8, Math.sin(i * .8) * .5, 1.1 * (1 - i / 14), P.acquaChiara);
+      }
       for (let i = 0; i < 6; i++)                                     // chi saluta dalla banchina
         omino(d, 4.5, 2, -4 + i * 1.6, i % 2 ? P.rosso : P.blu, P.pelle, .8);
       for (let x = -12; x <= 3; x += 3) for (let z = -12; z <= 12; z += 4)
@@ -1419,9 +1503,10 @@ volta(rng) {
       for (let i = 0; i < 4; i++) m.p(-6, 2 + i, -7, P.legno);        // lo scaffale
       for (let i = 0; i < 5; i++) m.p(-6 + i, 5, -7, P.cotto);
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       // la pila: dischi alternati che si impilano, poi la scintilla
       const f = (t * .22) % 1.4;
+      const d = dissolvenza(d0, f, 1.4);   // il ciclo si ritira invece di spegnersi
       const n = Math.min(14, Math.floor(f * 20));
       for (let i = 0; i < n; i++)
         d(0, 3.2 + i * .32, 0, 1.1, i % 3 === 0 ? P.ferro : i % 3 === 1 ? P.bronzo : P.tela);
@@ -1472,7 +1557,7 @@ volta(rng) {
       for (let i = 0; i < 10; i++)                                    // gli insorti dietro
         omino(d, -2 + (i % 5) * 1.5, 2, 3.5 + Math.floor(i / 5) * 1.4, i % 3 ? P.tela : P.nero, P.pelle, .85);
       for (let i = 0; i < 8; i++) {                                   // gli austriaci si ritirano
-        const p = ((t * 1.2 + i * 1.4) % 16);
+        const p = ((t * 1.2 + i * 1.4) % 9);                          // fin dove arriva la via, non oltre
         omino(d, 0 + (i % 3) - 1, 2, -3 - p, P.biancoIt, P.pelle, .85);
       }
     },
@@ -1531,8 +1616,9 @@ caporetto(rng) {
       for (let i = 0; i < 4; i++) { m.colonna(-4, -9 + i * 6, 1, 2, P.tronco); m.p(-4, 3, -9 + i * 6, P.legno); }
     },
     dinamici(d, t) {
-      // la colonna che ripiega, sotto la pioggia
-      const giro = v => ((v + 13) % 26 + 26) % 26 - 13;
+      // la colonna che ripiega, sotto la pioggia (il giro sta dentro la valle:
+      // i carri sono lunghi, e a ±13 la coda usciva dalla strada)
+      const giro = v => ((v + 11) % 22 + 22) % 22 - 11;
       const marcia = t * 1.3;
       for (let i = 0; i < 22; i++) {
         const z = giro(marcia + i * 1.25);
@@ -1750,9 +1836,10 @@ fondazione(rng) {
       for (let x = -11; x <= 11; x++) m.p(x, 1, 0, P.pietraChiara);     // la strada maestra
       for (let i = 0; i < 4; i++) albero(m, -9 + i * 6, 9, 1, rng);
     },
-    dinamici(d, t) {
-      // le case si alzano un blocco alla volta, poi la scena riparte
+    dinamici(d0, t) {
+      // le case si alzano un blocco alla volta, poi la scena si ritira e riparte
       const f = (t * .16) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);
       for (let i = 0; i < pos.length; i++) {
         const [x, z, alt] = pos[i];
         const cresce = clamp01((f - i * .09) * 4);
@@ -2001,6 +2088,7 @@ function scegliScena(ev) {
 }
 
 function disegnaFrame(t) {
+  orologio = t;
   for (const g of gruppiDin.values()) g.n = 0;
 
   const spingi = (x, y, z, s, c) => {
@@ -2201,18 +2289,49 @@ function smoke() {
 // schermo, rotazione del telefono): il renderer non se ne accorge da solo.
 function ridimensiona() { if (renderer && canvasCorr) misura(); }
 
+/* Due arnesi per il banco di prova (`tools/prova-scene.html`), inutili
+   nell'app: fermare il tempo su un istante preciso e disegnare il bordo del
+   plastico, per vedere a occhio chi si sporge nel vuoto. */
+function istante(t) {
+  if (!renderer || !scenaCorr) return;
+  stop();
+  disegnaFrame(t);
+}
+
+function bordo() {
+  if (!meshStatica) return;
+  const g = meshStatica.geometry;
+  g.computeBoundingBox();
+  const b = g.boundingBox;
+  const m = new Mondo();
+  for (let x = Math.round(b.min.x); x <= Math.round(b.max.x); x++) {
+    m.p(x, b.min.y, Math.round(b.min.z), 0xff0000);
+    m.p(x, b.min.y, Math.round(b.max.z), 0xff0000);
+  }
+  for (let z = Math.round(b.min.z); z <= Math.round(b.max.z); z++) {
+    m.p(Math.round(b.min.x), b.min.y, z, 0xff0000);
+    m.p(Math.round(b.max.x), b.min.y, z, 0xff0000);
+  }
+  const cornice = costruisciStatica(m.b);
+  scena.add(cornice);
+}
+
 /* Le scene firma stanno in due file: quelle storiche qui sopra, le altre in
    `cronoitalia-scene.js`, che le aggiunge con `registra`. Sono troppe perché
    stiano tutte in un file solo e restino leggibili. */
 function registra(nuove) { Object.assign(FIRMA, nuove); }
 
 const kit = {
-  Mondo, suolo, suoloParziale, albero, casa, omino, clamp01,
+  Mondo, suolo, suoloParziale, albero, casa, omino, clamp01, dissolvenza, arrivo,
   tempio, cattedrale, torre, mura, nave, folla, fuoco, bandiera, stelle, onde,
   fabbrica, ponte,
   interno, piazza, campo, porto, teatro, bottega, collina, valle,
 };
 
-return { play, stop, smoke, ridimensiona, registra, P, kit, FIRMA, TIPO };
+// `tempo` serve solo a chi disegna le scene fuori dal ciclo (i controlli in
+// node): dentro l'app ci pensa `disegnaFrame`.
+function tempo(t) { orologio = t; }
+
+return { play, stop, smoke, ridimensiona, registra, istante, bordo, tempo, P, kit, FIRMA, TIPO };
 
 })();

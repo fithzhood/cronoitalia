@@ -11,7 +11,7 @@
 (() => {
 
 const P = VoxScena.P;
-const { suolo, albero, casa, omino, clamp01, tempio, cattedrale, torre, mura,
+const { suolo, albero, casa, omino, clamp01, dissolvenza, arrivo, tempio, cattedrale, torre, mura,
         nave, folla, fuoco, bandiera, stelle, onde, fabbrica, ponte,
         interno, piazza, campo, porto, teatro, bottega, collina, valle } = VoxScena.kit;
 
@@ -49,10 +49,11 @@ VoxScena.registra({
 remedello(rng) {
   return { cielo: GIORNO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { bottega(m, P.terraScura); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* I primi pugnali di rame della penisola: il metallo cola nella forma e
          l'età della pietra finisce senza che nessuno se ne accorga. */
       const f = (t * .18) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       fuoco(d, t, 5, 1.4, -4, 7, .8, 0);
       for (let i = 0; i < 6; i++) {
         const g = ((t * 2 + i * .17) % 1);
@@ -95,11 +96,12 @@ villanoviani(rng) {
       for (let i = 0; i < 16; i++) {
         const su = clamp01((f - i / 20) * 5);
         if (su <= 0) continue;
+        const da = arrivo(d, su);
         const x = -9 + (i % 8) * 2.6, z = -4 + Math.floor(i / 8) * 5;
-        d(x, .8, z, .8, P.terraScura);
-        d(x, 1.6, z, .9 * su, P.cotto);
-        d(x, 2.4, z, .7 * su, P.cotto);
-        if (su > .8) d(x, 3, z, .5, P.bronzo);
+        da(x, .8, z, .8, P.terraScura);
+        da(x, 1.6, z, .9 * su, P.cotto);
+        da(x, 2.4, z, .7 * su, P.cotto);
+        if (su > .8) da(x, 3, z, .5, P.bronzo);
       }
       for (let i = 0; i < 6; i++) omino(d, -6 + i * 2.4, 1.4, 8, P.tela, P.pelle, .78);
     } };
@@ -173,11 +175,13 @@ gracchi(rng) {
       const proposta = f < .55;
       omino(d, 0, 5.4, 0, P.tela, P.pelle, 1);
       if (proposta) {
+        // le terre e la folla si ritirano prima del passaggio, senza lampo
+        const dp = dissolvenza(d, f, .55, .06);
         for (let i = 0; i < 12; i++) {                               // le terre assegnate
           if (f < i / 16) continue;
-          d(-8 + (i % 6) * 3, 1.4, 6 + Math.floor(i / 6) * 3, 1.4, P.erba);
+          dp(-8 + (i % 6) * 3, 1.4, 6 + Math.floor(i / 6) * 3, 1.4, P.erba);
         }
-        folla(d, t, 0, 3, 20, 2, [P.terraScura, P.tela], 1.4);
+        folla(dp, t, 0, 3, 20, 2, [P.terraScura, P.tela], 1.4);
       } else {
         const p = clamp01((f - .55) * 2.4);
         for (let i = 0; i < 12; i++) {
@@ -231,10 +235,11 @@ lucrezio(rng) {
 orazio(rng) {
   return { cielo: GIORNO, raggio: CALDO,
     statici(m) { collina(m, 12, 4, P.erbaScura, P.erba); casa(m, -3, -3, 6, 5, 3, P.tela, P.tetto, 5); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Carpe diem, aurea mediocritas: due espressioni che l'italiano userà
          per duemila anni, scritte in una villa di campagna. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       omino(d, 0, 5.4, 3, P.viola, P.pelle, .95);
       salgono(d, t, 0, 7, 3, 12, P.oro, 3);
       for (let i = 0; i < 6; i++) {                                  // le viti e il giorno che passa
@@ -305,10 +310,11 @@ giuliano(rng) {
 cassiodoro(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { interno(m, 17, 7, 10, P.pietraChiara, P.legno); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Un monastero-biblioteca in Calabria e i monaci messi a copiare i
          classici: un anello decisivo della catena. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let i = 0; i < 6; i++) {
         omino(d, -6 + i * 2.4, 1.4, 1, P.nero, P.pelle, .8);
         d(-6 + i * 2.4, 2.8, .2, .5, P.tela);
@@ -327,8 +333,10 @@ cassiodoro(rng) {
       const f = (t * .12) % 1.3;
       omino(d, -3, 1.4, 1, P.nero, P.pelle, .9);
       for (let i = 0; i < 14; i++) {                                 // le generazioni che si allineano
-        if (f < i / 16) continue;
-        omino(d, -6 + (i % 7) * 2, 2.6 + Math.floor(i / 7) * 1.6, -5, P.oliva, P.pelle, .5);
+        const p = clamp01((f - (i / 16)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        omino(da, -6 + (i % 7) * 2, 2.6 + Math.floor(i / 7) * 1.6, -5, P.oliva, P.pelle, .5);
       }
       pila(d, clamp01(f * 1.3), 10, 2, 2.4, 1, P.tela, .7);
     } };
@@ -360,8 +368,10 @@ cassiodoro(rng) {
          quattordici versi, e Dante li riconoscerà come i primi. */
       const f = (t * .12) % 1.3;
       for (let i = 0; i < 14; i++) {
-        if (f < i / 16) continue;
-        d(-3 + (i % 7) * 1, 5.4 - Math.floor(i / 7) * .9, -3, .8, i < 8 ? P.oro : P.rosso);
+        const p = clamp01((f - (i / 16)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-3 + (i % 7) * 1, 5.4 - Math.floor(i / 7) * .9, -3, .8, i < 8 ? P.oro : P.rosso);
       }
       for (let i = 0; i < 5; i++) {
         omino(d, -5 + i * 2.4, 1.4, 2, P.viola, P.pelle, .8);
@@ -374,15 +384,18 @@ cassiodoro(rng) {
 salimbene(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { interno(m, 17, 7, 10, P.tela, P.legno); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Pettegolezzi, ricette e ritratti feroci: il Duecento visto da dentro,
          scritto da un frate che gira l'Italia. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       omino(d, 0, 1.4, 2, P.nero, P.pelle, .95);
       const scene = [P.rosso, P.oro, P.viola, P.verdeIt, P.acquaChiara, P.cotto];
       for (let i = 0; i < 12; i++) {
-        if (f < i / 14) continue;
-        omino(d, -7 + (i % 6) * 2.4, 2.6 + Math.floor(i / 6) * 1.6, -5, scene[i % 6], P.pelle, .55);
+        const p = clamp01((f - (i / 14)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        omino(da, -7 + (i % 6) * 2.4, 2.6 + Math.floor(i / 6) * 1.6, -5, scene[i % 6], P.pelle, .55);
       }
       pila(d, clamp01(f * 1.3), 8, 3, 2.4, 1, P.tela, .7);
     } };
@@ -467,13 +480,16 @@ caterina(rng) {
 alberti(rng) {
   return { cielo: GIORNO, raggio: CALDO, ambiente: .65, fronte: FR,
     statici(m) { bottega(m, P.marmo); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* L'architettura diventa disciplina con regole scritte: chi progetta non
          è più il capomastro che sta in cantiere. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let i = 0; i < 10; i++) {                                 // il disegno sul tavolo
-        if (f < i / 12) continue;
-        d(-3.5 + i * .8, 2.5, -1, .7, i % 3 ? P.tela : P.oro);
+        const p = clamp01((f - (i / 12)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-3.5 + i * .8, 2.5, -1, .7, i % 3 ? P.tela : P.oro);
       }
       const su = clamp01((f - .5) * 2.4);
       for (let i = 0; i < 5; i++) for (let y = 0; y < 4 * su; y++)
@@ -492,10 +508,12 @@ alberti(rng) {
          risolvendo un problema di prospettiva, perché è quello che fa. */
       const f = (t * .11) % 1.3;
       for (let i = 0; i < 12; i++) {
-        if (f < i / 14) continue;
+        const p = clamp01((f - (i / 14)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const x = -7 + (i % 6) * 2.4, y = 3 + Math.floor(i / 6) * 3;
-        d(x, y, -6.4, 1.3, i % 3 ? P.acquaChiara : P.sabbia);
-        omino(d, x, y - .4, -6.2, i % 2 ? P.rosso : P.blu, P.pelle, .6);
+        da(x, y, -6.4, 1.3, i % 3 ? P.acquaChiara : P.sabbia);
+        omino(da, x, y - .4, -6.2, i % 2 ? P.rosso : P.blu, P.pelle, .6);
       }
       for (let i = 0; i < 8; i++) {                                  // le linee di costruzione
         if (f < .7) break;
@@ -530,8 +548,10 @@ pico(rng) {
       const f = (t * .12) % 1.3;
       for (let r = 0; r < 6; r++) for (let c = 0; c < 12; c++) {
         const i = r * 12 + c;
-        if (f < i / 80) continue;
-        d(-6.5 + c * 1.1, 3 + r * 1, -6.4, .7, i % 5 ? P.tela : P.oro);
+        const p = clamp01((f - (i / 80)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-6.5 + c * 1.1, 3 + r * 1, -6.4, .7, i % 5 ? P.tela : P.oro);
       }
       omino(d, 0, 1.4, 2, P.viola, P.pelle, .95);
       pubblico(d, t, 12, -6, 5, [P.nero, P.tela]);
@@ -541,10 +561,11 @@ pico(rng) {
 'leonardo-cavallo'(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6,
     statici(m) { suolo(m, 11, P.terraScura, P.terra, rng); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Sette metri di modello in argilla: il bronzo servirà per i cannoni, e i
          francesi useranno il modello come bersaglio. */
       const f = (t * .1) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       const su = clamp01(f * 1.8), rovina = clamp01((f - .6) * 2.4);
       const c = rovina > .3 ? P.terraScura : P.terra;
       const scala = su * (1 - rovina * .6);
@@ -570,9 +591,11 @@ ariosto(rng) {
       omino(d, -5, 1.4, 2, P.viola, P.pelle, .9);
       const figure = [P.ferro, P.oro, P.rosso, P.acquaChiara, P.verdeIt];
       for (let i = 0; i < 15; i++) {
-        if (f < i / 18) continue;
+        const p = clamp01((f - (i / 18)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const a = i * 2.399, r = 2 + (i % 5) * 1.1;
-        omino(d, Math.cos(a) * r, 3.5 + (i % 3) * 1.2, -2 + Math.sin(a) * r * .5,
+        omino(da, Math.cos(a) * r, 3.5 + (i % 3) * 1.2, -2 + Math.sin(a) * r * .5,
           figure[i % 5], P.pelle, .5);
       }
       pila(d, clamp01(f * 1.3), 12, -2, 2.4, -1, P.tela, .7);
@@ -608,8 +631,10 @@ vasari(rng) {
          quasi tutto quello che sappiamo di loro viene da qui. */
       const f = (t * .12) % 1.3;
       for (let i = 0; i < 16; i++) {
-        if (f < i / 18) continue;
-        omino(d, -7 + (i % 8) * 2, 2.6 + Math.floor(i / 8) * 1.6, -5,
+        const p = clamp01((f - (i / 18)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        omino(da, -7 + (i % 8) * 2, 2.6 + Math.floor(i / 8) * 1.6, -5,
           [P.rosso, P.blu, P.viola, P.oro][i % 4], P.pelle, .5);
       }
       pila(d, clamp01(f * 1.3), 14, -4, 2.4, -1, P.cotto, .8);
@@ -629,8 +654,10 @@ cateau(rng) {
       d(0, 2.6, -1, 1.6, P.tela);
       const firmato = clamp01((f - .4) * 2.4);
       for (let i = 0; i < 8; i++) {
-        if (firmato < i / 10) continue;
-        d(-2 + i * .5, 2.8, -1, .3, P.nero);
+        const p = clamp01((firmato - (i / 10)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-2 + i * .5, 2.8, -1, .3, P.nero);
       }
       for (let i = 0; i < 6; i++) {                                  // gli stati italiani che guardano
         omino(d, -6 + i * 2.4, 1.4, 4, [P.oliva, P.acqua, P.ocra, P.rosso, P.corallo, P.menta][i], P.pelle, .75);
@@ -667,16 +694,28 @@ palestrina(rng) {
     dinamici(d, t) {
       /* Accusato di aver messo nani e buffoni in un'Ultima Cena, non cambia il
          quadro: gli cambia il titolo. */
+      /* Il quadro sulla parete resta lì fermo — è un quadro. A muoversi sono
+         la sala e il processo: prima il tribunale era di fatto una fotografia,
+         cambiava solo il colore delle lettere del titolo. */
       const f = (t * .12) % 1.3;
       for (let i = 0; i < 13; i++)
         omino(d, -6.5 + i, 3.4, -6.4, i === 6 ? P.biancoIt : (i % 3 ? P.rosso : P.blu), P.pelle, .62);
       for (let i = 0; i < 4; i++)                                    // i personaggi contestati
         omino(d, -5 + i * 3.4, 2.4, -6.2, P.oro, P.pelle, .45);
       const titolo = clamp01((f - .5) * 2.4);
-      for (let i = 0; i < 10; i++)
-        d(-5 + i * 1.1, 7.4, -6.4, .5, titolo > .5 ? P.oro : P.nero);
-      omino(d, -4, 1.4, 2, P.terraScura, P.pelle, .9);
-      omino(d, 4, 1.4, 2, P.nero, P.pelle, .9);
+      for (let i = 0; i < 10; i++) {                                 // il titolo che viene riscritto, lettera per lettera
+        const cambiata = titolo * 10 > i;
+        d(-5 + i * 1.1, 7.4 + (cambiata ? 0 : Math.sin(t * 2 + i) * .12), -6.4, .5,
+          cambiata ? P.oro : P.nero);
+      }
+      // il pittore che si difende, e l'inquisitore che gli gira attorno
+      omino(d, -4 + Math.sin(t * .6) * .5, 1.4 + Math.abs(Math.sin(t * 1.8)) * .18, 2, P.terraScura, P.pelle, .9);
+      const gir = t * .45;
+      omino(d, 4 + Math.cos(gir) * 2.2, 1.4, 2 + Math.sin(gir) * 1.6, P.nero, P.pelle, .9);
+      for (let i = 0; i < 6; i++) {                                  // le candele del tribunale
+        const on = Math.abs(Math.sin(t * 3 + i * 1.3));
+        d(-6 + i * 2.4, 3.2 + on * .12, 4, .3 + on * .1, P.brace);
+      }
     } };
 },
 
@@ -689,9 +728,11 @@ tasso(rng) {
       const f = (t * .12) % 1.3;
       omino(d, -3, 1.4, 1, P.viola, P.pelle, .9);
       for (let i = 0; i < 12; i++) {                                 // i cavalieri immaginati
-        if (f < i / 14) continue;
+        const p = clamp01((f - (i / 14)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const a = i * 2.399, r = 2 + (i % 4);
-        omino(d, Math.cos(a) * r, 3.4, -2 + Math.sin(a) * r * .5, P.ferro, P.pelle, .45);
+        omino(da, Math.cos(a) * r, 3.4, -2 + Math.sin(a) * r * .5, P.ferro, P.pelle, .45);
       }
       for (let i = 0; i < 6; i++) d(-6 + i * .3, 1.4 + i * .5, -4, .25, P.ferro);   // le sbarre
       pila(d, clamp01(f * 1.3), 8, 2, 2.4, 1, P.tela, .7);
@@ -737,7 +778,7 @@ borromini(rng) {
           d(Math.cos(an) * r, 8 + k, Math.sin(an) * r, .7, k % 2 ? P.marmoOmbra : P.marmo);
         }
       }
-      folla(d, t, 0, 8, 8, 1.4, [P.tela, P.viola], 1.2);
+      folla(d, t, 0, 4, 8, 1.4, [P.tela, P.viola], 1.2);   // il fazzoletto di terreno è piccolo
     } };
 },
 
@@ -822,8 +863,10 @@ muratori(rng) {
          comincia a fondarsi sulle carte e non sulle cronache. */
       const f = (t * .12) % 1.3;
       for (let i = 0; i < 30; i++) {                                 // gli scaffali che si riempiono
-        if (f < i / 36) continue;
-        d(-7 + (i % 10) * 1.5, 2.6 + Math.floor(i / 10) * 1.6, -6, .8, i % 4 ? P.cotto : P.oro);
+        const p = clamp01((f - (i / 36)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-7 + (i % 10) * 1.5, 2.6 + Math.floor(i / 10) * 1.6, -6, .8, i % 4 ? P.cotto : P.oro);
       }
       omino(d, 0, 1.4, 2, P.nero, P.pelle, .9);
       pila(d, clamp01(f * 1.4), 12, -3, 2.4, 0, P.tela, .8);
@@ -865,13 +908,15 @@ tiepolo(rng) {
       const f = (t * .12) % 1.3;
       for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
         const i = r * 5 + c;
-        if (f < i / 30) continue;
+        const p = clamp01((f - (i / 30)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const x = -10 + c * 4.4, z = -10 + r * 4.4;
         for (let k = 0; k <= 4; k++) {
-          d(x + k, 1.2, z, .8, P.oro);
-          d(x, 1.2, z + k, .8, P.oro);
+          da(x + k, 1.2, z, .8, P.oro);
+          da(x, 1.2, z + k, .8, P.oro);
         }
-        if (f > i / 30 + .15) d(x + 2, 1.6, z + 2, .8, P.tela);
+        if (f > i / 30 + .15) da(x + 2, 1.6, z + 2, .8, P.tela);
       }
       for (let i = 0; i < 6; i++) omino(d, -8 + i * 3.4, 1.4, 11, P.viola, P.pelle, .78);
     } };
@@ -902,9 +947,11 @@ winckelmann(rng) {
          statue greche come modello, e il neoclassicismo comincia. */
       const f = (t * .12) % 1.3;
       for (let i = 0; i < 7; i++) {
-        if (f < i / 9) continue;
+        const p = clamp01((f - (i / 9)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const x = -6 + i * 2;
-        d(x, 2.4, -4, 1, P.marmo); d(x, 3.5, -4, .95, P.marmo); d(x, 4.5, -4, .8, P.marmo);
+        da(x, 2.4, -4, 1, P.marmo); da(x, 3.5, -4, .95, P.marmo); da(x, 4.5, -4, .8, P.marmo);
       }
       pila(d, clamp01((f - .5) * 2.4), 8, -3, 2.4, 2, P.tela, .8);
       omino(d, 5, 1.4, 2, P.viola, P.pelle, .9);
@@ -936,10 +983,11 @@ winckelmann(rng) {
 'gaetano-filangieri'(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { bottega(m, P.tela); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Uno Stato con istruzione pubblica e giustizia uguale per tutti:
          Franklin lo leggeva e gli scriveva dall'altra parte dell'oceano. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       pila(d, clamp01(f * 1.4), 14, -4, 2.4, -1, P.tela, .8);
       omino(d, -5, 1.4, 2, P.viola, P.pelle, .9);
       for (let i = 0; i < 8; i++) {                                  // le lettere che attraversano
@@ -1111,17 +1159,20 @@ cavour(rng) {
 plombieres(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { interno(m, 15, 6, 9, P.tela, P.legno); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Un accordo segreto: aiuto militare in cambio di Nizza e della Savoia.
          Due uomini, una stanza, e mezza penisola. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       omino(d, -2.4, 1.4, -1, P.blu, P.pelle, .95);
       omino(d, 2.4, 1.4, -1, P.viola, P.pelle, .95);
       d(0, 2.6, -1, 1.4, P.tela);
       const patto = clamp01((f - .4) * 2.4);
       for (let i = 0; i < 6; i++) {
-        if (patto < i / 8) continue;
-        d(-1.5 + i * .6, 2.8, -1, .3, P.nero);
+        const p = clamp01((patto - (i / 8)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-1.5 + i * .6, 2.8, -1, .3, P.nero);
       }
       if (patto > .7) {                                              // i due pezzi che cambiano mano
         d(-4, 3.4, 1, .8, P.lavanda);
@@ -1141,8 +1192,8 @@ plombieres(rng) {
       const traffico = 1 + Math.floor(clamp01(f * 1.4) * 5);
       for (let k = 0; k < traffico; k++) {
         const p = ((t * .3 + k * .17) % 1);
-        nave(d, t, -12 + p * 24, 1.2, -6 + (k % 3) * 3, 1, 7, P.legno, 0, 0);
-        for (let y = 0; y < 3; y++) d(-12 + p * 24 + 2.4, 2.4 + y, -6 + (k % 3) * 3, .5, P.grigio);
+        nave(d, t, -12 + p * 18, 1.2, -6 + (k % 3) * 3, 1, 7, P.legno, 0, 0);   // il piroscafo è lungo sei
+        for (let y = 0; y < 3; y++) d(-12 + p * 18 + 2.4, 2.4 + y, -6 + (k % 3) * 3, .5, P.grigio);
       }
       for (let i = 0; i < 12; i++) omino(d, -10 + i * 1.8, 2, 6.5, P.terraScura, P.pelle, .75);
     } };
@@ -1151,10 +1202,11 @@ plombieres(rng) {
 'legge-coppino'(rng) {
   return { cielo: GIORNO, raggio: CALDO, ambiente: .65, fronte: FR,
     statici(m) { interno(m, 19, 7, 11, P.tela, P.legno); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Tre anni di scuola obbligatoria e gratuita: l'analfabetismo, che era al
          settantacinque per cento, comincia a scendere davvero. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let r = 0; r < 3; r++) for (let c = 0; c < 8; c++) {
         const i = r * 8 + c;
         const presente = f > i / 30;
@@ -1213,9 +1265,10 @@ cuore(rng) {
 'pizza-margherita'(rng) {
   return { cielo: CUPO, raggio: FUOCO, ambiente: .6, fronte: FR,
     statici(m) { bottega(m, P.cotto); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Tre colori su un disco: la storia è forse ritoccata, il successo no. */
       const f = (t * .2) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       fuoco(d, t, 5, 2, -4, 8, .9, 0);
       const fatta = clamp01(f * 1.5);
       for (let i = 0; i < 12; i++) {
@@ -1303,9 +1356,11 @@ suffragio(rng) {
         omino(d, Math.cos(a) * 3.4, 1.4, -1 + Math.sin(a) * 2.6, P.terraScura, P.pelle, .8);
       }
       for (let i = 0; i < 10; i++) {                                 // le mani alzate, il voto
-        if (f < i / 12) continue;
+        const p = clamp01((f - (i / 12)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const a = i / 10 * Math.PI * 2;
-        d(Math.cos(a) * 3.4, 3.4, -1 + Math.sin(a) * 2.6, .35, P.pelle);
+        da(Math.cos(a) * 3.4, 3.4, -1 + Math.sin(a) * 2.6, .35, P.pelle);
       }
       pila(d, clamp01(f * 1.3), 10, -6, 2.4, -3, P.tela, .7);
     } };
@@ -1375,17 +1430,20 @@ acerbo(rng) {
 lateranensi(rng) {
   return { cielo: GIORNO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { interno(m, 19, 8, 11, P.marmo, P.marmoOmbra); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Stato e Chiesa si riconoscono: nasce la Città del Vaticano e finisce la
          questione aperta nel 1870. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       omino(d, -3, 1.4, -1, P.nero, P.pelle, .95);
       omino(d, 3, 1.4, -1, P.biancoIt, P.pelle, .95);
       d(0, 2.6, -1, 1.6, P.tela);
       const firmato = clamp01((f - .4) * 2.4);
       for (let i = 0; i < 8; i++) {
-        if (firmato < i / 10) continue;
-        d(-2 + i * .5, 2.8, -1, .3, P.nero);
+        const p = clamp01((firmato - (i / 10)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-2 + i * .5, 2.8, -1, .3, P.nero);
       }
       if (firmato > .7) {                                            // il territorio, minuscolo
         for (let x = -1; x <= 1; x++) for (let z = -1; z <= 1; z++)

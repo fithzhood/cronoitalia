@@ -11,7 +11,7 @@
 (() => {
 
 const P = VoxScena.P;
-const { suolo, albero, casa, omino, clamp01, tempio, cattedrale, torre, mura,
+const { suolo, albero, casa, omino, clamp01, dissolvenza, arrivo, tempio, cattedrale, torre, mura,
         nave, folla, fuoco, bandiera, stelle, onde, fabbrica, ponte,
         interno, piazza, campo, porto, teatro, bottega, collina, valle } = VoxScena.kit;
 
@@ -53,7 +53,8 @@ VoxScena.registra({
       for (let k = 0; k < 4; k++) {
         nave(d, t, -7 + urto, 1.2, -8 + k * 4.5, 1, 6, P.legno, P.acqua, 3);
         const giu = clamp01(((t * .12 + k * .25) % 1) - .6) * 3;
-        nave(d, t, 7 - urto, 1.2 - giu * 2, -8 + k * 4.5, -1, 6, P.tronco, giu > .2 ? 0 : P.ocra, 0);
+        // affonda fino al pelo dell'acqua, non dentro il fondale
+        nave(d, t, 7 - urto, 1.2 - Math.min(1, giu) * 1.5, -8 + k * 4.5, -1, 6, P.tronco, giu > .2 ? 0 : P.ocra, 0);
       }
       for (let i = 0; i < 8; i++) omino(d, -8 + i * 2.4, 2, 10, P.tela, P.pelle, .78);
     } };
@@ -131,7 +132,7 @@ grimoaldo(rng) {
       const f = (t * .1) % 1;
       const assalto = clamp01(f * 1.8), ritirata = clamp01((f - .55) * 2.4);
       for (let i = 0; i < 16; i++)
-        omino(d, 9 - assalto * 3 + ritirata * 6 + (i % 8) * 1.1, 1.6, -5 + Math.floor(i / 8) * 2.4,
+        omino(d, 6 - assalto * 3 + ritirata * 3 + (i % 8) * .8, 1.6, -5 + Math.floor(i / 8) * 2.4,
           P.indaco, P.pelle, .8);
       for (let i = 0; i < 10; i++) omino(d, -5 + i * 1.4, 7.6, -6, P.oliva, P.pelle, .8);
       polverone(d, t, 10, 4, 1.6);
@@ -141,10 +142,11 @@ grimoaldo(rng) {
 tagliacozzo(rng) {
   return { cielo: TRAMONTO, raggio: FUOCO,
     statici(m) { campo(m, 12, rng, 1.4); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Gli svevi credono di aver vinto e si sbandano a saccheggiare: la
          riserva francese esce dal bosco e li prende sparsi. */
       const f = (t * .1) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       const sbanda = clamp01((f - .35) * 2.4), riserva = clamp01((f - .55) * 2.4);
       for (let i = 0; i < 14; i++) {
         const a = i * 2.399;
@@ -278,8 +280,8 @@ montenotte(rng) {
         const p = clamp01(cuneo * 1.4 - (i % 8) * .04);
         omino(d, -1 + (i % 8) * .5 - 2, 1.2, -10 + p * 18, P.blu, P.pelle, .8);
       }
-      for (let i = 0; i < 8; i++) omino(d, -6, 1.2 + Math.max(0, (6 - 4) * 1.1), -6 + i * 3, P.biancoIt, P.pelle, .8);
-      for (let i = 0; i < 8; i++) omino(d, 6, 1.2, -6 + i * 3, P.biancoIt, P.pelle, .8);
+      for (let i = 0; i < 6; i++) omino(d, -6, 1.2 + Math.max(0, (6 - 4) * 1.1), -6 + i * 3, P.biancoIt, P.pelle, .8);
+      for (let i = 0; i < 6; i++) omino(d, 6, 1.2, -6 + i * 3, P.biancoIt, P.pelle, .8);
       polverone(d, t, 10, 0, 1.4, P.fumo);
     } };
 },
@@ -373,7 +375,7 @@ volturno(rng) {
       const f = (t * .09) % 1;
       const onda = clamp01(f * 1.6), respinta = clamp01((f - .55) * 2.4);
       for (let i = 0; i < 18; i++)
-        omino(d, 7 - onda * 6 + respinta * 7 + (i % 9) * 1.1, 1.6, -6 + Math.floor(i / 9) * 2.4,
+        omino(d, 6 - onda * 5 + respinta * 4 + (i % 9) * .85, 1.6, -6 + Math.floor(i / 9) * 2.4,
           P.biancoIt, P.pelle, .8);
       for (let i = 0; i < 18; i++)
         omino(d, -7 + (i % 9) * 1.1, 1.6, -6 + Math.floor(i / 9) * 2.4, P.rossoIt, P.pelle, .8);
@@ -561,7 +563,7 @@ dionisio(rng) {
         const car = Math.sin(t * 1.4 + k) * .5;
         for (let i = 0; i < 3; i++) d(-6 + k * 6 + car, 7.4 + i * .5, 6, .7, P.legno);
         const g = ((t * .6 + k * .33) % 1);
-        d(-6 + k * 6 - g * 10, 9 + Math.sin(g * Math.PI) * 5, 6 - g * 6, .8, P.roccia);
+        d(-6 + k * 6 - g * 5.5, 9 + Math.sin(g * Math.PI) * 5, 6 - g * 6, .8, P.roccia);   // il masso ricade dentro le mura
       }
       onde(d, t, 12, 3, [12, 10]);
     } };
@@ -628,10 +630,11 @@ mario(rng) {
 silla(rng) {
   return { cielo: CUPO, raggio: FUOCO, ambiente: .55, fronte: FR,
     statici(m) { interno(m, 19, 8, 11, P.marmo, P.marmoOmbra); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Le liste di proscrizione affisse in pubblico: chi ci finisce può essere
          ucciso da chiunque, e i beni vanno a chi lo denuncia. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       const nomi = Math.floor((f / 1.3) * 26);
       for (let i = 0; i < nomi; i++)
         d(-6 + (i % 13) * 1, 4 + Math.floor(i / 13) * 1.4, -6.4, .8, P.tela);
@@ -761,8 +764,10 @@ stilicone(rng) {
       omino(d, -2.5, 1.4, 1, P.corallo, P.pelle, .95);
       omino(d, 2.5, 1.4, 1, P.verdeIt, P.pelle, .95);
       for (let i = 0; i < 12; i++) {                                   // la linea che divide
-        if (firma < i / 14) continue;
-        d(-5.5 + i, 2.8, -1, .35, P.nero);
+        const p = clamp01((firma - (i / 14)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-5.5 + i, 2.8, -1, .35, P.nero);
       }
       for (let i = 0; i < 6; i++) {
         if (firma < .8) break;
@@ -998,7 +1003,7 @@ carboneria(rng) {
         for (let i = 0; i < 10; i++)
           omino(d, -9 + i * 2, 1.4, 9 - p * 6, P.biancoIt, P.pelle, .8);
         for (let i = 0; i < 8; i++)
-          omino(d, -7 + i * 2, 1.4, -9 - p * 4, P.viola, P.pelle, .75);
+          omino(d, -7 + i * 2, 1.4, -9 - p * 2.5, P.viola, P.pelle, .75);
       }
     } };
 },
@@ -1185,10 +1190,11 @@ fiume(rng) {
 squadrismo(rng) {
   return { cielo: TRAMONTO, nebbia: 0x3a3028, raggio: FUOCO, ambiente: .55,
     statici(m) { suolo(m, 12, P.erba, P.terra, rng, .6); for (let i = 0; i < 5; i++) casa(m, -10 + i * 5, -2 + (i % 2) * 6, 4, 4, 3, P.tela, P.tetto, 1); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Nelle campagne padane le squadre incendiano camere del lavoro e
          cooperative, con la tolleranza delle autorità. */
       const f = (t * .1) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       const arrivo = clamp01(f * 1.6);
       for (let k = 0; k < 3; k++) {                                    // i camion
         const x = -13 + arrivo * (10 + k * 2);
@@ -1360,8 +1366,8 @@ gap(rng) {
         for (let k = 0; k < 3; k++) bandiera(d, t, -6 + k * 6, 2, 4, 3, [P.rossoIt, P.rossoIt], k);
       } else {
         const p = clamp01((f - .5) * 2);
-        for (let i = 0; i < 30; i++)
-          omino(d, -12 + p * 24 + (i % 10) * .9, 1.4, 2 + Math.floor(i / 10) * 1.4, P.viola, P.pelle, .75);
+        for (let i = 0; i < 30; i++)                 // il corteo attraversa il piazzale senza uscirne
+          omino(d, -11 + p * 15 + (i % 10) * .8, 1.4, 2 + Math.floor(i / 10) * 1.4, P.viola, P.pelle, .75);
       }
       for (let k = 0; k < 2; k++) fuoco(d, t, -8 + k * 10, 13, -8, 4, .6, k * .3);
     } };

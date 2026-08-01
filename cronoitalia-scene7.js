@@ -11,7 +11,7 @@
 (() => {
 
 const P = VoxScena.P;
-const { suolo, albero, casa, omino, clamp01, tempio, cattedrale, torre, mura,
+const { suolo, albero, casa, omino, clamp01, dissolvenza, arrivo, tempio, cattedrale, torre, mura,
         nave, folla, fuoco, bandiera, stelle, onde, fabbrica, ponte,
         interno, piazza, campo, porto, teatro, bottega, collina, valle } = VoxScena.kit;
 
@@ -79,10 +79,11 @@ ungari(rng) {
 'boniface-anagni'(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .55, fronte: FR,
     statici(m) { interno(m, 17, 8, 10, P.marmo, P.marmoOmbra); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Inviati del re di Francia catturano il papa nel suo palazzo: la
          teocrazia medievale finisce lì dentro. */
       const f = (t * .1) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       omino(d, 0, 1.4, -3, P.biancoIt, P.pelle, 1);
       d(0, 3.6, -3, .7, P.oro);
       const entrata = clamp01(f * 1.8);
@@ -169,7 +170,7 @@ ungari(rng) {
         d(x - .35, y + .3, z, .3, P.marmo);
         d(x + .35, y + .3, z, .3, P.marmo);
       }
-      folla(d, t, 0, 8, 14, 1.8, [P.tela, P.nero], 1.4);
+      folla(d, t, 0, 5, 14, 1.8, [P.tela, P.nero], 1.4);   // la gente sta fra le case, non oltre il bordo
     } };
 },
 
@@ -198,7 +199,7 @@ ungari(rng) {
         if (avanza > .7) break;
         omino(d, -6 + i * 1.8, 1.6, -1, P.terraScura, P.pelle, .76);
       }
-      folla(d, t, 0, 10, 12, 1.8, [P.tela, P.nero], 1.4);
+      folla(d, t, 0, 5, 12, 1.8, [P.tela, P.nero], 1.4);   // dentro le mura, non oltre il bordo
     } };
 },
 
@@ -334,7 +335,8 @@ aspromonte(rng) {
          comandò il fuoco riceverà una medaglia. */
       const f = (t * .09) % 1;
       const prima = f < .5;
-      folla(d, t, 0, 2, prima ? 26 : 8, 1.8, [P.terraScura, P.tela], 1.2);
+      folla(d, t, 0, 2, Math.round(26 - 18 * clamp01((f - .46) * 12)), 1.8,
+        [P.terraScura, P.tela], 1.2);
       for (let i = 0; i < 14; i++)
         omino(d, -9 + i * 1.4, 1.4, -7, P.divisa, P.pelle, .78);
       if (!prima) {
@@ -352,10 +354,11 @@ aspromonte(rng) {
 umberto(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .55,
     statici(m) { suolo(m, 12, P.erba, P.terra, rng, .4); for (let i = 0; i < 4; i++) casa(m, -10 + i * 6, -9, 4, 3, 4, P.tela, P.tetto, 1); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Sobria: una carrozza che si ferma, e il paese che si sveglia con un re
          diverso. */
       const f = (t * .1) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       const x = -10 + Math.min(1, f * 2) * 10;
       for (let i = 0; i < 4; i++) d(x + (i % 2) * 1.2, 2.2, Math.floor(i / 2) * 1.1, 1, P.nero);
       d(x - 1.4, 2, .5, .9, P.terraScura);
@@ -485,11 +488,14 @@ cefalonia(rng) {
     dinamici(d, t) {
       /* Sobria: i camion partono all'alba e la piazza resta vuota. Di più di
          mille, ne torneranno sedici. */
+      /* I tre camion sono in fila per dodici blocchi: escono dalla piazza da
+         un lato e quel che è già fuori non si disegna. */
       const f = (t * .08) % 1;
+      const rot = (bx, y, z, s, c) => { if (bx >= -11 && bx <= 11) d(bx, y, z, s, c); };
       const x = -12 + clamp01(f * 1.6) * 24;
       for (let k = 0; k < 3; k++) {
-        for (let i = 0; i < 4; i++) d(x + k * 4 + (i % 2) * 1.2, 2.2, Math.floor(i / 2) * 1.1, 1, P.grigio);
-        for (let i = 0; i < 3; i++) d(x + k * 4 + .5, 3.2, .5 + (i % 2) * .5, .8, P.tela);
+        for (let i = 0; i < 4; i++) rot(x + k * 4 + (i % 2) * 1.2, 2.2, Math.floor(i / 2) * 1.1, 1, P.grigio);
+        for (let i = 0; i < 3; i++) rot(x + k * 4 + .5, 3.2, .5 + (i % 2) * .5, .8, P.tela);
       }
       const rimasti = Math.round(16 * (1 - clamp01(f * 1.6)));
       folla(d, t, 0, 5, rimasti, 1.8, [P.tela, P.terraScura], 1.2);
@@ -560,9 +566,10 @@ portella(rng) {
          La prima strage politica della Repubblica. */
       const f = (t * .08) % 1;
       const prima = f < .45;
-      folla(d, t, 0, 0, prima ? 26 : 6, 2, [P.tela, P.rossoIt, P.terraScura], 1.2);
+      const resta = clamp01((.45 - f) * 12);              // la festa si spegne, non si taglia
+      folla(d, t, 0, 0, Math.round(6 + 20 * resta), 2, [P.tela, P.rossoIt, P.terraScura], 1.2);
       if (prima) for (let k = 0; k < 3; k++)
-        bandiera(d, t, -4 + k * 4, 1.4, 4, 3, [P.rossoIt, P.rossoIt], k);
+        bandiera(dissolvenza(d, f, .45, .08), t, -4 + k * 4, 1.4, 4, 3, [P.rossoIt, P.rossoIt], k);
       else {
         const p = clamp01((f - .45) * 2.4);
         for (let i = 0; i < 12; i++)
@@ -634,9 +641,10 @@ polesine(rng) {
       const ora = prima ? (t * .5) % (Math.PI * 2) : 2.1;
       for (let i = 0; i < 4; i++) d(Math.cos(ora) * i * .3, 5.4 + Math.sin(ora) * i * .3, -6.2, .3, P.nero);
       if (prima) {
+        const dp = dissolvenza(d, f, .4, .05);            // la sala si spegne invece di sparire
         for (let r = 0; r < 2; r++) for (let i = 0; i < 8; i++)
-          omino(d, -7 + i * 2, 1.4, -2 + r * 2.4, [P.tela, P.viola][r], P.pelle, .76);
-        for (let i = 0; i < 6; i++) d(-6 + i * 2.4, 1.6, 2, .8, P.legno);
+          omino(dp, -7 + i * 2, 1.4, -2 + r * 2.4, [P.tela, P.viola][r], P.pelle, .76);
+        for (let i = 0; i < 6; i++) dp(-6 + i * 2.4, 1.6, 2, .8, P.legno);
       } else {
         const p = clamp01((f - .4) * 2.4);
         for (let i = 0; i < 16; i++) {
@@ -942,8 +950,10 @@ codogno(rng) {
           i % 2 ? P.biancoIt : P.rossoIt, P.pelle, .74);
       }
       for (let k = 0; k < 6; k++) {                                  // i manifesti
-        if (f < k / 8) continue;
-        d(-8 + k * 3.2, 4.4, -8, 1.1, k % 2 ? P.biancoIt : P.rossoIt);
+        const p = clamp01((f - (k / 8)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-8 + k * 3.2, 4.4, -8, 1.1, k % 2 ? P.biancoIt : P.rossoIt);
       }
       d(0, 2.4, 0, 1.6, P.legno);
     } };
@@ -1001,11 +1011,13 @@ marshall(rng) {
       const diviso = clamp01(f * 1.5);
       for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
         const i = r * 5 + c;
-        if (diviso < i / 30) continue;
+        const p = clamp01((diviso - (i / 30)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const x = -10 + c * 4.4, z = -10 + r * 4.4;
-        for (let k = 0; k <= 4; k++) { d(x + k, 1.2, z, .8, P.oro); d(x, 1.2, z + k, .8, P.oro); }
-        d(x + 2, 1.6, z + 2, .9, P.erba);
-        if (diviso > i / 30 + .2) omino(d, x + 2, 1.6, z + 3, P.terraScura, P.pelle, .6);
+        for (let k = 0; k <= 4; k++) { da(x + k, 1.2, z, .8, P.oro); da(x, 1.2, z + k, .8, P.oro); }
+        da(x + 2, 1.6, z + 2, .9, P.erba);
+        if (diviso > i / 30 + .2) omino(da, x + 2, 1.6, z + 3, P.terraScura, P.pelle, .6);
       }
     } };
 },
@@ -1044,13 +1056,13 @@ marshall(rng) {
     dinamici(d, t) {
       /* La maratona corsa di notte sull'Appia antica, a piedi nudi, sotto le
          torce: l'Italia si mostra ricostruita. */
-      const x = ((t * 3) % 30) - 15;
+      const x = ((t * 3) % 22) - 11;                                  // il maratoneta corre sulla via, non oltre
       omino(d, x, 2, 0, P.tela, P.pelle, .85);
       for (let i = 0; i < 14; i++) {                                 // le torce lungo la via
         d(-12 + i * 1.8, 2.4, -3, .3, P.tronco);
         fuoco(d, t, -12 + i * 1.8, 3, -3, 3, .3, i * .07);
       }
-      folla(d, t, 0, 6, 20, 2.4, [P.tela, P.viola], 1.4);
+      folla(d, t, 0, 4, 20, 2, [P.tela, P.viola], 1.4);
       stelle(d, 12, 10, 12);
     } };
 },
@@ -1153,15 +1165,19 @@ maxiprocesso(rng) {
       const f = (t * .12) % 1.3;
       for (let r = 0; r < 3; r++) for (let c = 0; c < 10; c++) {     // le gabbie
         const i = r * 10 + c;
-        if (f < i / 40) continue;
-        for (let y = 0; y < 3; y++) d(-8 + c * 1.7, 1.4 + r * 1.6 + y * .5, -5 + r * 1.4, .25, P.ferro);
-        omino(d, -8 + c * 1.7, 1.4 + r * 1.6, -5 + r * 1.4, P.terraScura, P.pelle, .55);
+        const p = clamp01((f - (i / 40)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        for (let y = 0; y < 3; y++) da(-8 + c * 1.7, 1.4 + r * 1.6 + y * .5, -5 + r * 1.4, .25, P.ferro);
+        omino(da, -8 + c * 1.7, 1.4 + r * 1.6, -5 + r * 1.4, P.terraScura, P.pelle, .55);
       }
       omino(d, 0, 1.4, 4, P.nero, P.pelle, .95);
       const filo = clamp01((f - .6) * 2.4);
       for (let i = 0; i < 14; i++) {                                 // il filo che li collega
-        if (filo < i / 18) continue;
-        d(-8 + i * 1.2, 6.4, -3, .3, P.oro);
+        const p = clamp01((filo - (i / 18)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-8 + i * 1.2, 6.4, -3, .3, P.oro);
       }
     } };
 },
@@ -1358,11 +1374,12 @@ pnrr(rng) {
       for (let i = 0; i < cantieri.length; i++) {
         const q = clamp01((f - i / 8) * 3);
         if (q <= 0) continue;
+        const da = arrivo(d, q);
         const [x, z] = cantieri[i], h = Math.round(5 * q);
         for (let y = 0; y < h; y++)
           for (let dx = 0; dx < 3; dx++) for (let dz = 0; dz < 2; dz++)
-            d(x + dx, 1 + y, z + dz, 1, q > .9 ? P.marmo : P.grigio);
-        if (q < .9) for (let s = 0; s < 3; s++) d(x + s, 1 + h + 1, z, .3, P.tronco);
+            da(x + dx, 1 + y, z + dz, 1, q > .9 ? P.marmo : P.grigio);
+        if (q < .9) for (let s = 0; s < 3; s++) da(x + s, 1 + h + 1, z, .3, P.tronco);
       }
       for (let i = 0; i < 12; i++) {                                 // le scadenze che scorrono
         const acceso = (f / 1.3) * 12 > i;

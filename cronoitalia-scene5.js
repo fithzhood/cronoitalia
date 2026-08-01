@@ -11,7 +11,7 @@
 (() => {
 
 const P = VoxScena.P;
-const { suolo, albero, casa, omino, clamp01, tempio, cattedrale, torre, mura,
+const { suolo, albero, casa, omino, clamp01, dissolvenza, arrivo, tempio, cattedrale, torre, mura,
         nave, folla, fuoco, bandiera, stelle, onde, fabbrica, ponte,
         interno, piazza, campo, porto, teatro, bottega, collina, valle } = VoxScena.kit;
 
@@ -74,10 +74,11 @@ polada(rng) {
 frattesina(rng) {
   return { cielo: GIORNO, raggio: CALDO,
     statici(m) { suolo(m, 12, P.erba, P.terra, rng, .6); for (let z = -12; z <= 12; z++) for (let x = -2; x <= 1; x++) m.p(x, 0, z, P.acqua); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Ambra dal Baltico, avorio dall'Africa, vetro: il commercio a lunga
          distanza arriva in Italia molto prima dei Greci. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       borgo(d, t, f, [[3, -6], [6, -1], [4, 4], [8, -8], [7, 6]], P.legno, P.tetto);
       for (let k = 0; k < 4; k++) {                                  // le merci che arrivano
         const p = ((f + k / 4) % 1);
@@ -100,11 +101,12 @@ frattesina(rng) {
       for (let i = 0; i < posti.length; i++) {
         const su = clamp01((f - i / 8) * 4);
         if (su <= 0) continue;
+        const da = arrivo(d, su);
         const [x, z] = posti[i];
         const h = Math.max(0, Math.round(5 - Math.hypot(x, z) * .42));
         for (let k = 0; k < 2 * su; k++)
           for (let dx = 0; dx < 3; dx++) for (let dz = 0; dz < 3; dz++)
-            d(x + dx, h + 1 + k, z + dz, 1, k > 0 ? P.tetto : P.legno);
+            da(x + dx, h + 1 + k, z + dz, 1, k > 0 ? P.tetto : P.legno);
       }
       if (f > .8) { for (let i = 0; i < 4; i++) d(-1 + i, 6.4, 0, .9, P.marmo); d(.5, 7.4, 0, .7, P.oro); }
       for (let i = 0; i < 8; i++) omino(d, Math.cos(i * .8) * 6, 5.4, Math.sin(i * .8) * 6, P.tela, P.pelle, .75);
@@ -129,7 +131,7 @@ frattesina(rng) {
       onde(d, t, 12, 3, [12, 6]);
       for (let k = 0; k < 3; k++) {
         const p = ((t * .4 + k * .33) % 1);
-        nave(d, t, -12 + p * 24, 1.2, -8 + k * 3, 1, 5, P.legno, P.tela, 0);
+        nave(d, t, -12 + p * 20, 1.2, -8 + k * 3, 1, 5, P.legno, P.tela, 0);   // lo scafo è lungo cinque
       }
     } };
 },
@@ -149,7 +151,9 @@ frattesina(rng) {
          stesso posto: la terra nera è troppo fertile per rinunciarci. */
       const f = (t * .1) % 1.4;
       const ciclo = f % .7;
-      borgo(d, t, clamp01(ciclo * 3), [[-8, 2], [-3, 4], [2, 2], [6, 5], [-6, 7], [1, 8]], P.tela, P.tetto);
+      // il borgo si ritira prima di essere rifondato, invece di sparire di scatto
+      borgo(dissolvenza(d, ciclo, .7), t, clamp01(ciclo * 3),
+        [[-8, 2], [-3, 4], [2, 2], [6, 5], [-6, 7], [1, 8]], P.tela, P.tetto);
       if (ciclo > .5) {                                              // la colata che torna
         const c = (ciclo - .5) / .2;
         for (let i = 0; i < 14; i++)
@@ -162,10 +166,11 @@ frattesina(rng) {
 crotone(rng) {
   return { cielo: GIORNO, raggio: CALDO,
     statici(m) { porto(m, 3, rng, P.erbaScura); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Atleti imbattibili a Olimpia e la scuola di Pitagora: una colonia che
          esporta ginnastica e matematica. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       borgo(d, t, f, [[-8, 5], [-2, 6], [4, 5], [8, 8], [-5, 9]], P.tela, P.tetto, 2);
       for (let i = 0; i < 6; i++) {                                  // i corridori nello stadio
         const a = t * .6 + i * 1.05;
@@ -202,10 +207,11 @@ taranto(rng) {
 gela(rng) {
   return { cielo: TRAMONTO, raggio: CALDO,
     statici(m) { porto(m, 3, rng, P.sabbia); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Rodii e cretesi sulla costa meridionale: qui morirà Eschilo, e qui
          nascerà il tiranno che salverà la Sicilia greca a Himera. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       borgo(d, t, f, [[-8, 5], [-3, 7], [2, 5], [7, 7], [-6, 9]], P.sabbia, P.tetto, 2);
       if (f > .75) tempioDin(d, t, 0, 9);
       onde(d, t, 12, 3, [12, 4]);
@@ -220,11 +226,12 @@ gela(rng) {
 locri(rng) {
   return { cielo: GIORNO, raggio: CALDO, fronte: FR,
     statici(m) { interno(m, 17, 7, 10, P.sabbia, P.legno); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Zaleuco scrive quello che la tradizione considera il primo codice di
          leggi del mondo greco: chi propone una modifica lo fa con la corda al
          collo. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       pila(d, f, 18, -3.5, 2.4, -1, P.tela);
       omino(d, 0, 1.4, 2, P.tela, P.pelle, .95);
       for (let i = 0; i < 3; i++) d(0, 3.4 + i * .4, 2, .25, P.tronco);   // la corda
@@ -268,8 +275,10 @@ chiusi(rng) {
       const f = (t * .12) % 1.3;
       borgo(d, t, f, [[-7, -4], [-2, 1], [3, -3], [5, 3], [-5, 4]], P.cotto, P.tetto, 5);
       for (let i = 0; i < 6; i++) {                                  // le tombe scavate nel fianco
-        if (f < .5 + i / 20) continue;
-        d(-8 + i * 3, 2.4, 8, .9, P.nero);
+        const p = clamp01((f - (.5 + i / 20)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-8 + i * 3, 2.4, 8, .9, P.nero);
       }
       for (let i = 0; i < 8; i++) omino(d, Math.cos(i * .8) * 5, 5.4, Math.sin(i * .8) * 5, P.viola, P.pelle, .75);
       if (f > .9) d(0, 8.4, 0, .8, P.oro);
@@ -478,8 +487,10 @@ cangrande(rng) {
         if (su > .7) d(x, 9 + k, -6, .9, P.marmoOmbra);
       for (let r = 0; r < 4; r++) for (let c = 0; c < 12; c++) {     // gli intarsi, uno alla volta
         const i = r * 12 + c;
-        if (f < .5 + i / 100) continue;
-        d(-6.5 + c, 2.4 + r * 1.6, -5.4, .8, i % 3 ? P.marmoOmbra : P.rosso);
+        const p = clamp01((f - (.5 + i / 100)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-6.5 + c, 2.4 + r * 1.6, -5.4, .8, i % 3 ? P.marmoOmbra : P.rosso);
       }
       for (let i = 0; i < 8; i++) omino(d, -6 + i * 1.7, 1.4, 2, P.biancoIt, P.pelle, .75);
     } };
@@ -647,9 +658,12 @@ traforo(rng) {
          compressa inventate per l'occasione: l'Italia si attacca all'Europa. */
       const f = (t * .11) % 1.3;
       const avanz = clamp01(f * 1.4);
+      /* Chi è ancora dentro la montagna non si disegna: le due squadre
+         escono dalle imboccature, non dal vuoto oltre la piastra. */
       for (let i = 0; i < 10; i++) {
-        omino(d, -1 + (i % 3), .8, -12 + avanz * 11 - i * .9, P.terraScura, P.pelle, .75);
-        omino(d, -1 + (i % 3), .8, 12 - avanz * 11 + i * .9, P.terraScura, P.pelle, .75);
+        const za = -12 + avanz * 11 - i * .9, zb = 12 - avanz * 11 + i * .9;
+        if (za >= -12) omino(d, -1 + (i % 3), .8, za, P.terraScura, P.pelle, .75);
+        if (zb <= 12) omino(d, -1 + (i % 3), .8, zb, P.terraScura, P.pelle, .75);
       }
       for (let k = 0; k < 3; k++) {                                  // le perforatrici
         d(-1 + k, 1.2, -12 + avanz * 11.6, .7, P.ferro);
@@ -760,8 +774,10 @@ eur(rng) {
       const su = clamp01(f * 1.4);
       for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) {      // il palazzo a griglia
         const i = r * 6 + c;
-        if (su < i / 40) continue;
-        for (const z of [-4, -1]) d(-5 + c * 2, 2 + r * 1.4, z, .9, P.marmo);
+        const p = clamp01((su - (i / 40)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        for (const z of [-4, -1]) da(-5 + c * 2, 2 + r * 1.4, z, .9, P.marmo);
       }
       for (let x = -6; x <= 6; x += 2) for (let z = -4; z >= -5; z--) {
         if (su < .8) break;
@@ -853,10 +869,11 @@ eni(rng) {
 'trattati-roma'(rng) {
   return { cielo: GIORNO, raggio: CALDO, fronte: FR,
     statici(m) { interno(m, 19, 9, 11, P.marmo, P.marmoOmbra); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Sei fondatori attorno allo stesso tavolo in Campidoglio: da lì nasce il
          mercato in cui l'Italia farà il suo boom. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let i = 0; i < 6; i++) {
         const a = Math.PI + i / 6 * Math.PI;
         omino(d, Math.cos(a) * 4.4, 1.4, -1 + Math.sin(a) * 3, P.viola, P.pelle, .85);
@@ -883,8 +900,10 @@ eni(rng) {
         for (let z = -2; z <= 2; z++) d(x, 1.2, z, .9, P.grigio);
         if (x % 3 === 0) d(x, 1.4, 0, .5, P.biancoIt);
       }
-      for (let i = 0; i < 6; i++) {                                  // i mezzi del cantiere
-        d(-12 + avanz * 24 + i * .8, 1.8, -1 + (i % 3), .8, P.oro);
+      for (let i = 0; i < 6; i++) {                                  // i mezzi del cantiere, in testa al nastro
+        const mx = -12 + avanz * 24 + i * .8;
+        if (mx > 12) continue;
+        d(mx, 1.8, -1 + (i % 3), .8, P.oro);
       }
       for (let i = 0; i < 8; i++) {
         if (avanz < .5) break;
@@ -973,14 +992,17 @@ regioni(rng) {
 'cesare-calendario'(rng) {
   return { cielo: NOTTE, raggio: 0xbcd0f0, ambiente: .5, fronte: FR,
     statici(m) { interno(m, 17, 8, 10, P.marmo, P.marmoOmbra); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Trecentosessantacinque giorni più il bisestile: reggerà sedici secoli,
          sbagliando undici minuti l'anno. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let i = 0; i < 12; i++) {                                 // i dodici mesi
-        if (f < i / 14) continue;
+        const p = clamp01((f - (i / 14)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const a = i / 12 * Math.PI * 2;
-        d(Math.cos(a) * 3.4, 5 + Math.sin(a) * 2.4, -3, .8, i % 2 ? P.oro : P.marmoOmbra);
+        da(Math.cos(a) * 3.4, 5 + Math.sin(a) * 2.4, -3, .8, i % 2 ? P.oro : P.marmoOmbra);
       }
       if (f > .9) d(Math.cos(Math.PI / 3) * 4.4, 5 + Math.sin(Math.PI / 3) * 3.2, -3, .5, P.rosso);
       omino(d, -4, 1.4, 1, P.viola, P.pelle, .95);
@@ -998,8 +1020,10 @@ regioni(rng) {
       const f = (t * .11) % 1.3;
       for (let r = 0; r < 5; r++) for (let c = 0; c < 12; c++) {
         const i = r * 12 + c;
-        if (f < i / 70) continue;
-        d(-6.5 + c, 2.4 + r * .9, -2, .85, (c + r) % 4 === 0 ? P.acqua : P.sabbia);
+        const p = clamp01((f - (i / 70)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(-6.5 + c, 2.4 + r * .9, -2, .85, (c + r) % 4 === 0 ? P.acqua : P.sabbia);
       }
       omino(d, -6, 1.4, 3, P.verdeIt, P.pelle, .9);
       omino(d, 6, 1.4, 3, P.oro, P.pelle, .95);
@@ -1041,7 +1065,8 @@ regioni(rng) {
       const giu = f < .3 ? Math.sin(f / .3 * Math.PI) : 0;
       d(0, 5 - giu * 1.4, -1, 1.4, P.tronco);
       for (let y = 0; y < 3; y++) d(0, 2 + y, -1, 1.2, P.legno);
-      pila(d, ((t * .16) % 1.3) / 1.3, 16, -5, 2.4, 1, P.tela, .8);
+      const fp = (t * .16) % 1.3;                        // il ciclo della pila, più lento del torchio
+      pila(dissolvenza(d, fp, 1.3), fp / 1.3, 16, -5, 2.4, 1, P.tela, .8);
       omino(d, -4, 1.4, 3, P.nero, P.pelle, .85);
       omino(d, 4, 1.4, 3, P.nero, P.pelle, .85);
       for (let i = 0; i < 8; i++) d(5, 2.4 + (i % 4) * .5, -3 + Math.floor(i / 4) * 1.4, .5, P.cotto);
@@ -1051,10 +1076,11 @@ regioni(rng) {
 pacioli(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { bottega(m); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Dare e avere, due colonne che devono chiudere uguali: il metodo
          veneziano messo a stampa, e ancora in uso oggi. */
       const f = (t * .16) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       const righe = Math.floor((f / 1.3) * 10);
       for (let i = 0; i < righe; i++) {
         d(-2.5, 2.6 + i * .45, -1, .7, P.oro);
@@ -1110,16 +1136,19 @@ gregoriano(rng) {
 malpighi(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { bottega(m); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Al microscopio, nel polmone di una rana, i vasi che collegano arterie e
          vene: l'anello mancante della circolazione. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let y = 0; y < 5; y++) d(0, 2.6 + y * .5, -1, .5, P.bronzo);
       const visto = clamp01((f - .35) * 2.4);
       for (let i = 0; i < 16; i++) {                                 // la rete dei capillari
-        if (visto < i / 20) continue;
+        const p = clamp01((visto - (i / 20)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const a = i * 2.399;
-        d(Math.cos(a) * (1 + (i % 5) * .5), 7 + Math.sin(a) * (1 + (i % 5) * .4), -1,
+        da(Math.cos(a) * (1 + (i % 5) * .5), 7 + Math.sin(a) * (1 + (i % 5) * .4), -1,
           .35, i % 3 ? P.rosso : P.blu);
       }
       omino(d, -4, 1.4, 2, P.nero, P.pelle, .9);
@@ -1152,10 +1181,11 @@ cassini(rng) {
 spallanzani(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { bottega(m); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Brodi bolliti e sigillati: da quelli non nasce niente, dagli altri sì.
          Dal nulla non nasce nulla. */
       const f = (t * .16) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let k = 0; k < 2; k++) {
         const sigillato = k === 0;
         for (let y = 0; y < 3; y++) d(-2.5 + k * 5, 2.6 + y * .5, -1, .7, P.acquaChiara);
@@ -1215,15 +1245,17 @@ cinquecento(rng) {
 'olivetti-elea'(rng) {
   return { cielo: CUPO, raggio: CALDO, ambiente: .6, fronte: FR,
     statici(m) { interno(m, 19, 7, 11, P.biancoIt, P.marmoOmbra); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Il primo calcolatore interamente a transistor progettato e prodotto in
          Italia, e disegnato come un mobile. Poi si lasciò perdere. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let k = 0; k < 5; k++) {
         const su = clamp01((f - k * .1) * 4);
         if (su <= 0) continue;
+        const da = arrivo(d, su);
         for (let y = 0; y < 4 * su; y++)
-          for (let dx = 0; dx < 2; dx++) d(-7 + k * 3.4 + dx, 1 + y, -3, 1, P.grigio);
+          for (let dx = 0; dx < 2; dx++) da(-7 + k * 3.4 + dx, 1 + y, -3, 1, P.grigio);
       }
       for (let i = 0; i < 14; i++) {                                 // le lucine che corrono
         if (f < .6) break;
@@ -1239,10 +1271,11 @@ cinquecento(rng) {
 'internet-italia'(rng) {
   return { cielo: NOTTE, raggio: 0x9fc0e0, ambiente: .5, fronte: FR,
     statici(m) { interno(m, 19, 7, 11, P.pietraChiara, P.marmoOmbra); },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Il 30 aprile parte il primo pacchetto verso la rete americana: l'Italia
          è il quarto paese europeo a collegarsi. */
       const f = (t * .16) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let k = 0; k < 3; k++)
         for (let y = 0; y < 4; y++) d(-6 + k * 3, 1 + y, -3, 1, P.grigio);
       const p = (f / 1.3);
@@ -1271,7 +1304,7 @@ cinquecento(rng) {
       const f = (t * .1) % 1.3;
       for (let k = 0; k < 5; k++) {
         const p = ((f + k / 5) % 1);
-        const x = -13 + p * 26;
+        const x = -10.5 + p * 21;                                    // il carro col cavallo davanti resta sulla strada
         for (let i = 0; i < 4; i++) d(x + (i % 2) * 1.2, 2.2, Math.floor(i / 2) * 1.1, 1, P.legno);
         d(x + .5, 3.2, .5, .9, k % 2 ? P.marmo : P.oro);
         d(x - 1.4, 2, .5, .9, P.terraScura);
@@ -1296,15 +1329,21 @@ cinquecento(rng) {
       /* Nove milioni cambiano regione in vent'anni: il treno parte pieno da
          sud e arriva pieno a nord, e Torino diventa una città meridionale. */
       const f = (t * .09) % 1;
+      /* Il treno del Sud è lungo nove blocchi: entra ed esce, e quel che è
+         ancora fuori dalla piastra non si disegna. */
+      const rot = (bx, y, z, s, c) => { if (bx >= -12 && bx <= 12) d(bx, y, z, s, c); };
       const x = -13 + f * 26;
-      d(x, 2.2, 0, 1.2, P.nero);
+      rot(x, 2.2, 0, 1.2, P.nero);
       for (let k = 0; k < 4; k++) {
-        d(x + 2 + k * 2.2, 2.2, 0, 1.1, P.grigioverde);
-        for (let i = 0; i < 3; i++) omino(d, x + 2 + k * 2.2, 3, 0, P.tela, P.pelle, .5);
+        rot(x + 2 + k * 2.2, 2.2, 0, 1.1, P.grigioverde);
+        for (let i = 0; i < 3; i++) {
+          const px = x + 2 + k * 2.2;
+          if (px >= -12 && px <= 12) omino(d, px, 3, 0, P.tela, P.pelle, .5);
+        }
       }
       for (let i = 0; i < 10; i++) {
         const g = (t * 1.2 + i * .1) % 1;
-        d(x - .6, 4 + g * 3, Math.sin(t * 2 + i) * .4, .7 * (1 - g), P.fumo);
+        rot(x - .6, 4 + g * 3, Math.sin(t * 2 + i) * .4, .7 * (1 - g), P.fumo);
       }
       for (let i = 0; i < 8; i++) omino(d, -10 + i * .9, 1.6, 3, P.terraScura, P.pelle, .72);
       for (let k = 0; k < 2; k++) fuoco(d, t, 5 + k * 4, 12, -8, 4, .6, k * .3);

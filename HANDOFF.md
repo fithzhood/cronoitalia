@@ -56,12 +56,25 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | `node tools/check-stati.js` | Nessuna provincia senza stato, nessuna in due stati |
 | `node tools/check-colori.js` | Nessuna coppia di stati **confinanti** con colori confondibili |
 | `node tools/check-scene.js` | Colori inesistenti nelle scene, scene senza evento, copertura |
+| `node tools/check-anim.js [--tutte\|<id>]` | Come si **muovono** le scene: chi esce dalla piastra, chi non si muove, chi sfarfalla |
+| `tools/prova-scene.html` | Banco di prova: apre una scena qualsiasi, ferma il tempo, disegna il bordo della piastra |
 | `VoxScena.smoke()` in console | Costruisce tutte le scene a più istanti e riporta gli errori |
 
 **Falli girare tutti dopo ogni modifica ai dati o alle scene.** Hanno già trovato
 bug veri: 9 sovrapposizioni di province fra stati, 30 coppie confinanti
 indistinguibili, il segno sbagliato di un arco in fase di generazione, tre id
 duplicati e un colore `undefined` da un modulo negativo nella volta della Sistina.
+`check-anim.js`, l'ultimo arrivato, ne ha trovati **71 in un colpo solo**: 60 scene
+con blocchi che marciavano, navigavano o volavano fuori dalla piastra, 4 con
+qualcosa che sprofondava sotto il terreno, 5 che dopo un minuto di scheda aperta
+si erano svuotate perché il movimento non si avvolgeva, 2 del tutto immobili.
+Sono state corrette tutte.
+
+Il banco di prova (`prova-scene.html`) apre le scene senza passare per la mappa:
+serve il server locale (`python -m http.server`), poi
+`tools/prova-scene.html?id=<id-evento>`. Il tasto **bordo del plastico** disegna
+una cornice rossa sul perimetro del mondo statico: chi si sporge nel vuoto si
+vede a occhio in un secondo.
 
 Per aggiungere eventi: scrivi un file `tools/new-eventi-<nome>.js` che esporta un
 array, lancia `node tools/merge-eventi.js --prova`, correggi quel che segnala,
@@ -203,6 +216,52 @@ lo smoke test lo prende, ma è un errore facile da fare copiando.
   absidale costruito arrotondando seni e coseni si legge peggio di una parete
   piana. Meglio le forme squadrate, che è poi lo spirito del voxel.
 
+### Regole sul movimento (le ha imparate `check-anim.js`)
+
+- **Chi si muove deve restare sulla piastra, e non basta guardare il punto
+  d'ancoraggio.** Un treno lungo otto blocchi ancorato a x = 12 arriva a 20: la
+  piastra finisce a 12 e il resto galleggia sul nero. O si riduce la corsa
+  lasciando spazio all'ingombro, o si taglia al bordo con un
+  `if (bx >= -12 && bx <= 12)` — quest'ultimo va benissimo per treni, carrozze e
+  navi, che così sembrano entrare e uscire dall'inquadratura.
+- **Il giro (`giro`/`% 26 - 13`) va scritto sul bordo meno l'ingombro.** Quasi
+  tutte le scene avvolgevano a ±13 su una piastra di ±12, e ogni pezzo più lungo
+  di un blocco usciva. E attenzione ancora al **modulo negativo**:
+  `(v % 26) - 13` con v negativo dà fino a −19 (era il caso dell'Appia).
+- **Chi affonda si ferma al pelo dell'acqua.** Tre scene di battaglia navale
+  facevano scendere le navi di due o tre blocchi sotto il fondale, dove non le
+  vede più nessuno.
+- **Attenzione a `folla(d, t, cx, cz, n, r0, …)`**: il raggio arriva a
+  `r0 + 4.8`, quindi una folla centrata a z = 8 su una piastra di 11 sborda di
+  due blocchi. Centrarla entro metà piastra.
+- **Le figure respirano da sole.** `omino` oscilla di un cinquesimo di blocco,
+  con la fase presa dalla posizione: senza, le scene d'interni erano fotografie.
+  L'orologio è `orologio`, aggiornato dal ciclo; fuori dal browser lo si imposta
+  con `VoxScena.tempo(t)`.
+- **Il ciclo che riparte non deve svuotare il plastico, e i pezzi non devono
+  comparire di scatto.** Il modo solito (`const f = (t * .12) % 1.3` e poi
+  `if (f < i / n) continue`) fa comparire le cose una a una e poi sparire tutte
+  insieme: due lampi, uno in entrata e uno in uscita. Per questo ci sono due
+  pezzi di kit, e le scene nuove dovrebbero usarli tutt'e due:
+
+  ```javascript
+  dinamici(d0, t) {
+    const f = (t * .12) % 1.3;
+    const d = dissolvenza(d0, f, 1.3);      // in coda al ciclo tutto si ritira
+    for (let i = 0; i < 12; i++) {
+      const p = clamp01((f - i / 14) * 5);
+      if (p <= 0) continue;
+      const da = arrivo(d, p);              // il pezzo scende e cresce al posto suo
+      da(x, y, z, 1, P.marmo);
+    }
+  }
+  ```
+
+  `dissolvenza` fuori dalla coda restituisce la `d` originale e `arrivo` a
+  pezzo arrivato pure, quindi non costano niente quando non servono.
+  `check-anim.js` segnala il primo caso come `SVUOTO` e il secondo come
+  `COMPARSE`.
+
 ### Aggiungere una scena firma
 
 Basta una voce in `FIRMA` con la chiave uguale all'`id` dell'evento:
@@ -235,6 +294,13 @@ rigenerare la geometria.
 ---
 
 ## Cosa manca / si può fare
+
+- **49 scene hanno ancora un'animazione essenziale** (`node tools/check-anim.js`):
+  28 `COMPARSE` (i pezzi arrivano ma poi il quadro sta fermo), 18 `QUASI-FERMA`
+  e 3 `NON-MISURATA`. Non sono errori — su tutte le figure respirano e il ciclo
+  entra ed esce in dissolvenza — ma se una ti sembra spenta, quella è la lista
+  da cui partire. Le `NON-MISURATA` il controllo non sa giudicarle (il numero di
+  blocchi cambia a ogni fotogramma): vanno guardate nel banco di prova.
 
 - **Le scene ci sono tutte.** Ogni evento nuovo che aggiungi al dataset parte
   però senza: `check-scene.js` te lo dice, e la scena per tipo lo copre finché

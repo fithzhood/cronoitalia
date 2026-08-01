@@ -10,7 +10,7 @@
 (() => {
 
 const P = VoxScena.P;
-const { suolo, albero, casa, omino, clamp01, cattedrale, torre, mura, nave,
+const { suolo, albero, casa, omino, clamp01, dissolvenza, arrivo, cattedrale, torre, mura, nave,
         folla, fuoco, bandiera, onde, fabbrica, ponte } = VoxScena.kit;
 
 const NOTTE = 0x14203a, GIORNO = 0x24344c, TRAMONTO = 0x2e2c3e, CUPO = 0x1c1f28;
@@ -27,10 +27,11 @@ machiavelli(rng) {
       for (let i = 0; i < 5; i++) albero(m, -9 + i * 5, 6, 1, rng);
       m.box(-2, 5, -4, 5, 1, 2, P.legno);
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* La sera si toglie i panni da campagna e mette quelli da corte per
          entrare nelle antiche corti degli antichi: così scrive all'amico. */
       const f = (t * .12) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       omino(d, 0, 6, -3, f > .45 ? P.viola : P.terraScura, P.pelle, 1);
       for (let i = 0; i < 3; i++) { if (f >= .45) break; d(2 + i * .6, 6.4, -1, .5, P.viola); }
       for (let i = 0; i < 10; i++) {
@@ -57,14 +58,17 @@ machiavelli(rng) {
         m.p(Math.round(-Math.cos(an) * 9), 9 + Math.round(Math.sin(an) * 2), z, P.tela);
       }
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* La Scuola di Atene: i filosofi si dispongono sotto le arcate, e i due
          al centro indicano uno il cielo e uno la terra. */
       const f = (t * .13) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);   // il ciclo si ritira invece di spegnersi
       for (let i = 0; i < 16; i++) {
-        if (f < i / 20) continue;
+        const p = clamp01((f - (i / 20)) * 5);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
         const grado = Math.abs(i - 7.5) < 2 ? 1.4 : 0;
-        omino(d, -7.5 + i, 2.4 + grado, -6.3, i % 4 ? P.tela : P.rosso, P.pelle, .8);
+        omino(da, -7.5 + i, 2.4 + grado, -6.3, i % 4 ? P.tela : P.rosso, P.pelle, .8);
       }
       if (f > .8) { d(-.9, 6.4, -6.2, .4, P.oro); d(.9, 5.2, -6.2, .4, P.oro); }
       for (let a = 0; a <= 10; a++) {
@@ -149,7 +153,7 @@ bruno(rng) {
       for (let y = 0; y < 5; y++) d(0, 2 + y, 0, .5, P.tronco);
       omino(d, 0, 3.4, 0, P.nero, P.nero, .95);
       fuoco(d, t, 0, 2, 0, 10, 1.2, 0);
-      folla(d, t, 0, 6, 12, 2, [P.nero, P.viola], 1.2);
+      folla(d, t, 0, 4, 12, 2, [P.nero, P.viola], 1.2);   // in Campo de' Fiori, dentro la piazza
       const cielo = clamp01((f - .5) * 2);
       for (let i = 0; i < 26; i++) {
         if (cielo <= 0) break;
@@ -229,7 +233,7 @@ caravaggio(rng) {
       /* I monatti passano con il carro e la città si svuota; sui muri restano
          i segni degli untori, che non erano mai esistiti. */
       const f = (t * .09) % 1;
-      const cx = ((t * .7) % 30) - 15;
+      const cx = ((t * .7) % 20) - 11;                 // il carro dei monatti, con i due ai lati
       for (let i = 0; i < 6; i++) d(cx + (i % 3) * 1.1, 2.2, Math.floor(i / 3) * 1, 1, P.legno);
       omino(d, cx - 1.6, 2, .5, P.rosso, P.pelle, .85);
       omino(d, cx + 3.4, 2, .5, P.rosso, P.pelle, .85);
@@ -539,10 +543,11 @@ rossini(rng) {
       }
       m.box(-8, 1, -6, 17, 1, 3, P.legno);
     },
-    dinamici(d, t) {
+    dinamici(d0, t) {
       /* Il crescendo: la stessa frase torna e ogni volta si aggiunge uno
          strumento, finché non scoppia. */
       const f = (t * .25) % 1;
+      const d = dissolvenza(d0, f, 1);   // il ciclo si ritira invece di spegnersi
       const strumenti = Math.floor(f * 8) + 1;
       for (let i = 0; i < strumenti; i++) {
         const x = -6 + i * 1.7;
