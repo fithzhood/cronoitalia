@@ -38,8 +38,9 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | `cronoitalia-stati.js` | — | **26 epoche** politiche, dal 800 a.C. a oggi |
 | `cronoitalia-data.js` | 123 KB | **498 eventi**, dal 12000 a.C. al 2021, 17 con rotta |
 | `cronoitalia-voxel.js` | — | Motore diorami + kit di elementi riusabili + 36 scene firma |
-| `cronoitalia-scene.js` | — | **80 scene firma**: preistoria, antichità, medioevo, Rinascimento |
-| `cronoitalia-scene2.js` | — | **50 scene firma**: dal Cinquecento a oggi |
+| `cronoitalia-scene.js` | — | 80 scene firma: preistoria, antichità, medioevo, Rinascimento |
+| `cronoitalia-scene2.js` | — | 50 scene firma: dal Cinquecento a oggi |
+| `cronoitalia-scene3.js` | — | 86 scene firma: il riempimento fino a metà degli eventi |
 | `vendor/three.min.js` | 654 KB | three.js r160 (l'ultima build UMD, quindi `<script>` normale) |
 
 ### Strumenti (`tools/`, da lanciare con node dalla cartella dell'app)
@@ -145,10 +146,11 @@ Due sole mesh, per reggere sul telefono:
 Niente `instanceColor`: raggruppare per colore evita di dipendere da come le
 varie build di three gestiscono i colori per istanza.
 
-**166 scene su misura su 498 eventi: una su tre.** Le altre usano la scena per
+**252 scene su misura su 498 eventi: una su due.** Le altre usano la scena per
 tipo, variata dal generatore seminato sull'id. Le scene stanno in tre file:
-le prime 36 nel motore, poi `cronoitalia-scene.js` (fino al Rinascimento) e
-`cronoitalia-scene2.js` (dal Cinquecento). Si registrano con `VoxScena.registra`
+le prime 36 nel motore, le altre in `cronoitalia-scene*.js`. `check-scene.js`
+li trova da solo con un glob, quindi aggiungere un volume non richiede di
+toccare il controllo. Si registrano con `VoxScena.registra`
 e attingono a `VoxScena.kit`, la libreria di elementi riusabili: `tempio`,
 `cattedrale`, `torre`, `mura`, `nave`, `folla`, `fuoco`, `bandiera`, `stelle`,
 `onde`, `fabbrica`, `ponte`, più `suolo`, `casa`, `albero`, `omino`. È il kit a
@@ -220,10 +222,10 @@ rigenerare la geometria.
 
 ## Cosa manca / si può fare
 
-- **Altre scene firma.** Sono 166 su 498: la copertura richiesta di un terzo è
-  raggiunta al pelo, e ogni evento aggiunto al dataset la fa scendere. Le
-  prossime papabili: scala, mundial, capaci (sobria), codogno (sobria),
-  internet-italia, basaglia, vespa, cinquecento, dolce-vita.
+- **Altre scene firma.** Sono 252 su 498, cioè il 50,6%: il margine sopra la
+  metà è di tre scene, e ogni evento aggiunto al dataset lo consuma. Fra gli
+  scoperti più desiderabili restano: mundial, dolce-vita, olimpiadi-roma,
+  internet-italia, basaglia, cinquecento, portella, bologna-1980, irpinia.
 - **Più eventi.** 498 coprono bene la penisola, ma il Sud interno e le isole
   possono ancora crescere, e il Novecento del design e della musica leggera è
   appena accennato.

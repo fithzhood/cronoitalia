@@ -38,6 +38,7 @@ const P = {
   divisa: 0x6b7358, oliva: 0x7f8f42, grigioblu: 0x6c8296, grigioverde: 0x7d9188,
   porpora: 0x8e3f68, sangue: 0x8c2f2a, ruggine: 0xa8552f, ottone: 0xc2a24a,
   marrone: 0x96674a, senape: 0xb9a13e, corallo: 0xd9836a, menta: 0x6fbfa3,
+  ocra: 0xc9a227, indaco: 0x6b5bb0,
   verdeIt: 0x3f9e5e, biancoIt: 0xf0f0ee, rossoIt: 0xc23b2f,
 };
 
