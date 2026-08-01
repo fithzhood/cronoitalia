@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta name="theme-color" content="#0d1420">
+<title>CronoItalia</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇮🇹</text></svg>">
+<link rel="stylesheet" href="cronoitalia.css?v=2">
+</head>
+<body>
+
+<svg id="map" preserveAspectRatio="none">
+  <defs>
+    <symbol id="i-battaglia" viewBox="0 0 24 24"><path d="M12 2l2 6 6-2-4 5 5 3-6 1 1 6-4-4-4 4 1-6-6-1 5-3-4-5 6 2z" fill="currentColor"/></symbol>
+    <symbol id="i-guerra" viewBox="0 0 24 24"><path d="M4 4l12 12M20 4L8 16M14 18l4-4M6 18l4 4M18 18l-4 4M10 18l-4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-viaggio" viewBox="0 0 24 24"><path d="M3 17h18l-2 4H5zM12 15V4l6 9h-6" fill="currentColor"/></symbol>
+    <symbol id="i-fondazione" viewBox="0 0 24 24"><path d="M6 21V9h3V6h2V3h2v3h2v3h3v12M6 21h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-scoperta" viewBox="0 0 24 24"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2z" fill="currentColor"/></symbol>
+    <symbol id="i-disastro" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-cultura" viewBox="0 0 24 24"><path d="M20 4c-6 0-12 4-14 12l-2 4 4-2c8-2 12-8 12-14zM6 16c3-5 7-8 11-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  </defs>
+
+  <g id="ctx"></g>
+  <g id="units"></g>
+  <path id="coste"></path>
+  <path id="confProv" class="hidden"></path>
+  <path id="confStato"></path>
+  <g id="routes"></g>
+  <g id="glow"></g>
+</svg>
+
+<div id="vignette"></div>
+<div id="overlay"></div>
+<div id="brand">CRONO<b>ITALIA</b></div>
+
+<div id="jumpFx"></div>
+
+<div id="eraBanner" class="hidden"><h4></h4><p></p></div>
+
+<div id="yearCounter" class="hidden">
+  <div id="yearBig">2026</div>
+  <div id="windowLabel"></div>
+</div>
+
+<button id="returnBtn" class="hidden" title="Torna alla carta (Esc)">&#8617; Torna su</button>
+
+<aside id="legend">
+  <h2><span id="legendEra">—</span><button id="legendToggle" title="Mostra/nascondi legenda">–</button></h2>
+  <div id="legendNote"></div>
+  <ul id="legendList"></ul>
+  <label id="provRow"><input type="checkbox" id="provChk"> confini di provincia</label>
+</aside>
+
+<div id="orbitPanel">
+  <div id="hint">Scegli un anno e guarda cambiare i confini. Poi tocca un luogo e viaggia.</div>
+  <div class="row">
+    <input type="range" id="yearSlider" min="-3300" max="2026" value="2026" step="1">
+  </div>
+  <div class="row">
+    <input type="number" id="yearField" min="1" max="3300" value="2026">
+    <select id="eraSelect"><option value="dC">d.C.</option><option value="aC">a.C.</option></select>
+    <button id="travelBtn" disabled>Viaggia</button>
+  </div>
+</div>
+
+<div id="playbackPanel" class="hidden">
+  <button id="playBtn" title="Play / pausa (Spazio)">&#10074;&#10074;</button>
+  <input type="range" id="scrub" min="0" max="1000" value="0" step="1">
+  <button id="speedBtn" title="Velocità">1&times;</button>
+</div>
+
+<aside id="eventLog" class="hidden">
+  <h2>Cronaca</h2>
+  <ul id="logList"></ul>
+</aside>
+
+<div id="eventCard" class="hidden">
+  <button id="cardClose">&times;</button>
+  <div id="cardHead"><svg id="cardIcon" viewBox="0 0 24 24"><use href="#i-battaglia"/></svg><span id="cardYears"></span></div>
+  <div id="voxWrap">
+    <canvas id="cardVox"></canvas>
+    <button id="voxFull" title="Ingrandisci a tutto schermo">&#9974;</button>
+    <div id="voxTitolo"></div>
+  </div>
+  <h3 id="cardTitle"></h3>
+  <p id="cardDesc"></p>
+</div>
+
+<div id="quiet" class="hidden">
+  <button id="quietClose">&times;</button>
+  <h3>Qui la storia tace&hellip;</h3>
+  <p>Nessun evento registrato in questo punto e in questi anni. Vicino, nello spazio e nel tempo:</p>
+  <div id="quietList"></div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="cronoitalia-map.js?v=1"></script>
+<script src="cronoitalia-stati.js?v=2"></script>
+<script src="cronoitalia-data.js?v=1"></script>
+<script src="cronoitalia-voxel.js?v=2"></script>
+<script src="cronoitalia.js?v=2"></script>
+</body>
+</html>

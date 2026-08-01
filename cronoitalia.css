@@ -1,0 +1,378 @@
+/* CronoItalia — tema notturno da tavolo cartografico. */
+
+:root {
+  --mare: #0d1b2c;
+  --mare-2: #0a1420;
+  --terra-fuori: #1d2733;      /* terre non italiane, sfondo neutro */
+  --costa: rgba(150, 190, 220, .35);
+  --conf-stato: rgba(12, 18, 26, .85);
+  --conf-prov: rgba(255, 255, 255, .16);
+  --oro: #d8b25a;
+  --testo: #e8eef5;
+  --testo-2: #9fb0c2;
+  --pannello: rgba(14, 22, 34, .88);
+  --bordo: rgba(216, 178, 90, .28);
+
+  --c-battaglia: #e06a52;
+  --c-guerra: #cf7a4a;
+  --c-viaggio: #56b6c2;
+  --c-fondazione: #7fb069;
+  --c-scoperta: #e3c05a;
+  --c-disastro: #c2557a;
+  --c-cultura: #9b8ad6;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; height: 100%; overflow: hidden;
+  background: var(--mare-2);
+  color: var(--testo);
+  font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hidden { display: none !important; }
+
+/* ---------------- mappa ---------------- */
+
+#map {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  background: radial-gradient(ellipse at 50% 35%, var(--mare) 0%, var(--mare-2) 70%);
+  cursor: grab; touch-action: none;
+}
+#map.grabbing { cursor: grabbing; }
+
+#ctx path { fill: var(--terra-fuori); stroke: none; }
+
+#units path {
+  stroke: none;
+  transition: fill .7s ease;
+}
+#units path.spento { fill: var(--terra-fuori); }
+#units path.evidenzia { filter: brightness(1.35); }
+
+#coste { fill: none; stroke: var(--costa); stroke-width: 1.1; vector-effect: non-scaling-stroke; }
+#confProv { fill: none; stroke: var(--conf-prov); stroke-width: .8; vector-effect: non-scaling-stroke; }
+#confStato { fill: none; stroke: var(--conf-stato); stroke-width: 1.9; vector-effect: non-scaling-stroke;
+             stroke-linejoin: round; }
+
+#routes path {
+  fill: none; stroke-width: 2.4; vector-effect: non-scaling-stroke;
+  stroke-linecap: round; stroke-linejoin: round;
+  opacity: .9; filter: drop-shadow(0 0 4px currentColor);
+}
+#routes circle { fill: #fff; filter: drop-shadow(0 0 5px #fff); }
+
+#vignette {
+  position: fixed; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.55) 100%);
+}
+
+#brand {
+  position: fixed; top: 14px; left: 18px; z-index: 5;
+  font-size: 13px; letter-spacing: .32em; font-weight: 300;
+  color: rgba(216,178,90,.55); pointer-events: none;
+}
+#brand b { font-weight: 700; color: rgba(216,178,90,.8); }
+
+/* ---------------- marcatori ---------------- */
+
+#overlay { position: fixed; inset: 0; pointer-events: none; }
+
+.evt, .dest {
+  position: absolute; transform: translate(-50%, -50%);
+  pointer-events: auto; cursor: pointer;
+}
+
+.evt {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(10,16,26,.85);
+  border: 1.5px solid currentColor;
+  box-shadow: 0 0 10px currentColor, 0 2px 6px rgba(0,0,0,.5);
+  transition: transform .18s ease, opacity .5s ease;
+}
+.evt svg { width: 15px; height: 15px; }
+.evt:hover { transform: translate(-50%, -50%) scale(1.25); z-index: 3; }
+.evt.battaglia  { color: var(--c-battaglia); }
+.evt.guerra     { color: var(--c-guerra); }
+.evt.viaggio    { color: var(--c-viaggio); }
+.evt.fondazione { color: var(--c-fondazione); }
+.evt.scoperta   { color: var(--c-scoperta); }
+.evt.disastro   { color: var(--c-disastro); }
+.evt.cultura    { color: var(--c-cultura); }
+
+.evt.nato { animation: nasce .7s cubic-bezier(.2,1.4,.4,1); }
+@keyframes nasce {
+  from { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+  60%  { transform: translate(-50%,-50%) scale(1.5); opacity: 1; }
+  to   { transform: translate(-50%,-50%) scale(1); }
+}
+.evt.attivo { animation: pulsa 1.6s ease-in-out infinite; }
+@keyframes pulsa { 0%,100% { box-shadow: 0 0 8px currentColor; } 50% { box-shadow: 0 0 20px currentColor; } }
+.evt.passato { opacity: .42; }
+
+.dest {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--oro);
+  box-shadow: 0 0 12px rgba(216,178,90,.7);
+  animation: mira 1.8s ease-in-out infinite;
+}
+@keyframes mira { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.28); } }
+
+/* ---------------- pannelli ---------------- */
+
+#orbitPanel, #playbackPanel, #eventLog, #eventCard, #quiet, #legend, #eraBanner {
+  background: var(--pannello);
+  border: 1px solid var(--bordo);
+  border-radius: 14px;
+  backdrop-filter: blur(9px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+#orbitPanel {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  z-index: 6; width: min(560px, calc(100vw - 28px)); padding: 14px 16px;
+}
+#hint { font-size: 13px; color: var(--testo-2); margin-bottom: 10px; text-align: center; }
+.row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+
+input[type=range] {
+  flex: 1; -webkit-appearance: none; appearance: none; height: 4px;
+  background: linear-gradient(90deg, rgba(216,178,90,.5), rgba(216,178,90,.15));
+  border-radius: 2px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--oro); border: 2px solid #1a1408; cursor: pointer;
+  box-shadow: 0 0 10px rgba(216,178,90,.6);
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%; border: 2px solid #1a1408;
+  background: var(--oro); cursor: pointer;
+}
+
+input[type=number], select {
+  background: rgba(255,255,255,.06); color: var(--testo);
+  border: 1px solid var(--bordo); border-radius: 8px;
+  padding: 7px 9px; font: inherit; font-size: 14px; width: 96px;
+}
+select { width: 78px; }
+input[type=number].scuote { animation: scuoti .3s; }
+@keyframes scuoti { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+button {
+  background: rgba(216,178,90,.14); color: var(--oro);
+  border: 1px solid var(--bordo); border-radius: 9px;
+  padding: 8px 15px; font: inherit; font-weight: 600; cursor: pointer;
+  transition: background .18s, transform .08s;
+}
+button:hover:not(:disabled) { background: rgba(216,178,90,.26); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: .38; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--oro); outline-offset: 2px;
+}
+#travelBtn { margin-left: auto; }
+
+#playbackPanel {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  z-index: 6; width: min(560px, calc(100vw - 28px)); padding: 11px 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+#playBtn, #speedBtn { min-width: 46px; text-align: center; }
+
+#returnBtn { position: fixed; top: 14px; right: 16px; z-index: 7; }
+
+/* ---------------- contatore anni ---------------- */
+
+#yearCounter {
+  position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
+  z-index: 5; text-align: center; pointer-events: none;
+}
+#yearBig {
+  font-size: clamp(34px, 7vw, 58px); font-weight: 200; letter-spacing: .06em;
+  color: var(--oro); text-shadow: 0 0 26px rgba(216,178,90,.35);
+  font-variant-numeric: tabular-nums;
+}
+#windowLabel { font-size: 12px; color: var(--testo-2); letter-spacing: .18em; }
+
+/* ---------------- legenda politica ---------------- */
+
+#legend {
+  position: fixed; top: 56px; left: 16px; z-index: 6;
+  width: 232px; max-height: min(58vh, 520px);
+  padding: 10px 12px 8px; display: flex; flex-direction: column;
+}
+#legend h2 {
+  margin: 0 0 4px; font-size: 13px; font-weight: 700; letter-spacing: .04em;
+  color: var(--oro); display: flex; align-items: center; gap: 6px;
+}
+#legendEra { flex: 1; }
+#legendToggle {
+  padding: 0; width: 22px; height: 22px; line-height: 1; font-size: 15px;
+  border-radius: 6px; flex: none;
+}
+#legendNote { font-size: 11.5px; color: var(--testo-2); margin-bottom: 8px; line-height: 1.4; }
+#legendList { list-style: none; margin: 0; padding: 0 4px 0 0; overflow-y: auto; flex: 1; }
+#legendList li {
+  display: flex; align-items: center; gap: 7px; font-size: 12.5px;
+  padding: 3px 4px; border-radius: 6px; cursor: pointer;
+}
+#legendList li:hover { background: rgba(255,255,255,.07); }
+#legendList i {
+  width: 13px; height: 13px; border-radius: 3px; flex: none;
+  border: 1px solid rgba(0,0,0,.45);
+}
+#provRow {
+  display: flex; align-items: center; gap: 7px; font-size: 12px;
+  color: var(--testo-2); margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.08); cursor: pointer;
+}
+#legend.chiusa #legendNote, #legend.chiusa #legendList, #legend.chiusa #provRow { display: none; }
+
+/* ---------------- striscione dell'epoca ---------------- */
+
+#eraBanner {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 8; padding: 18px 26px; text-align: center; max-width: min(460px, 88vw);
+  pointer-events: none; animation: epoca 3.4s ease forwards;
+}
+#eraBanner h4 { margin: 0 0 6px; font-size: 21px; font-weight: 500; color: var(--oro); }
+#eraBanner p { margin: 0; font-size: 13.5px; color: var(--testo-2); }
+@keyframes epoca {
+  0% { opacity: 0; transform: translate(-50%,-46%) scale(.96); }
+  12%, 72% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-52%) scale(1); }
+}
+
+/* ---------------- cronaca ---------------- */
+
+#eventLog {
+  position: fixed; right: 16px; top: 56px; z-index: 6;
+  width: 292px; max-height: 62vh; padding: 10px 6px 10px 12px;
+  display: flex; flex-direction: column;
+}
+#eventLog h2 {
+  margin: 0 0 8px; font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--oro); font-weight: 600;
+}
+#logList { list-style: none; margin: 0; padding: 0 8px 0 0; overflow-y: auto; }
+#logList li {
+  padding: 7px 8px; border-radius: 8px; font-size: 13px; cursor: pointer;
+  display: flex; align-items: baseline; gap: 7px; line-height: 1.35;
+}
+#logList li:hover { background: rgba(255,255,255,.07); }
+#logList li.ultimo { background: rgba(216,178,90,.13); }
+#logList .punto { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+#logList .anno { color: var(--testo-2); font-size: 11.5px; font-variant-numeric: tabular-nums; flex: none; }
+
+#logList::-webkit-scrollbar, #legendList::-webkit-scrollbar { width: 7px; }
+#logList::-webkit-scrollbar-thumb, #legendList::-webkit-scrollbar-thumb {
+  background: rgba(216,178,90,.25); border-radius: 4px;
+}
+
+/* ---------------- scheda evento ---------------- */
+
+#eventCard {
+  position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  z-index: 9; width: min(460px, calc(100vw - 32px)); max-height: 88vh;
+  overflow-y: auto; padding: 16px 18px 20px;
+}
+#cardClose, #quietClose {
+  position: absolute; top: 8px; right: 10px; padding: 2px 9px; font-size: 19px;
+  line-height: 1.2; border-radius: 8px;
+}
+#cardHead { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+#cardIcon { width: 21px; height: 21px; }
+#cardYears { font-size: 12px; letter-spacing: .16em; color: var(--testo-2); text-transform: uppercase; }
+#voxWrap { position: relative; }
+#cardVox {
+  width: 100%; height: 210px; display: block; border-radius: 10px;
+  background: #0a121e; border: 1px solid rgba(255,255,255,.07);
+  touch-action: none; cursor: grab;
+}
+#cardVox:active { cursor: grabbing; }
+
+#voxFull {
+  position: absolute; right: 8px; bottom: 8px;
+  padding: 3px 9px; font-size: 15px; line-height: 1.3; border-radius: 8px;
+  background: rgba(10,16,26,.7);
+}
+#voxTitolo { display: none; }
+
+/* A tutto schermo il diorama esce dalla scheda e si prende la pagina. */
+#voxWrap.pieno {
+  position: fixed; inset: 0; z-index: 30; background: #060b13;
+}
+#voxWrap.pieno #cardVox {
+  width: 100%; height: 100%; border-radius: 0; border: none;
+}
+#voxWrap.pieno #voxFull { right: 14px; bottom: auto; top: 14px; font-size: 19px; padding: 5px 12px; }
+#voxWrap.pieno #voxTitolo {
+  display: block; position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 14px 18px 18px; text-align: center; pointer-events: none;
+  background: linear-gradient(transparent, rgba(6,11,19,.85));
+  font-size: 15px; color: var(--testo);
+}
+#voxWrap.pieno #voxTitolo b { display: block; font-size: 19px; color: var(--oro); font-weight: 600; }
+#voxWrap.pieno #voxTitolo small { color: var(--testo-2); font-size: 12px; }
+#eventCard h3 { margin: 13px 0 7px; font-size: 20px; font-weight: 600; line-height: 1.25; }
+#eventCard p { margin: 0; font-size: 14.5px; color: #cddaea; }
+
+/* ---------------- regione silenziosa ---------------- */
+
+#quiet {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%);
+  z-index: 7; width: min(420px, calc(100vw - 32px)); padding: 14px 16px;
+}
+#quiet h3 { margin: 0 0 6px; font-size: 16px; color: var(--oro); font-weight: 600; }
+#quiet p { margin: 0 0 10px; font-size: 13px; color: var(--testo-2); }
+#quietList { display: flex; flex-direction: column; gap: 6px; }
+#quietList button { text-align: left; font-weight: 400; font-size: 13px; color: var(--testo); }
+#quietList .anno { color: var(--oro); font-variant-numeric: tabular-nums; }
+#quietList small { color: var(--testo-2); }
+
+/* ---------------- effetto salto ---------------- */
+
+#jumpFx { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0; background: #fff; }
+#jumpFx.via { animation: salto .65s ease-out; }
+@keyframes salto { 0% { opacity: 0; } 22% { opacity: .8; } 100% { opacity: 0; } }
+
+/* ---------------- schermi stretti ---------------- */
+
+/* Su telefono i tre pannelli non ci stanno insieme: la legenda parte chiusa
+   (la apre il pulsante e si stende sopra la mappa) e la cronaca diventa un
+   cassetto in basso, sopra i comandi. */
+@media (max-width: 760px) {
+  #legend {
+    top: 10px; left: 10px; right: auto; width: min(64vw, 250px); max-height: 46vh;
+  }
+  #legend.chiusa { width: auto; max-width: 64vw; }
+  #eventLog {
+    top: auto; bottom: 78px; left: 10px; right: 10px; width: auto; max-height: 24vh;
+  }
+  #yearCounter { top: 8px; left: auto; right: 12px; transform: none; text-align: right; }
+  #yearBig { font-size: 30px; }
+  #windowLabel { font-size: 10.5px; letter-spacing: .1em; }
+  #brand { display: none; }
+  /* sotto il contatore degli anni, per non finire sopra la cronaca */
+  #returnBtn { top: 104px; right: 12px; padding: 6px 11px; font-size: 13px; }
+  #orbitPanel, #playbackPanel { bottom: 10px; }
+  #orbitPanel #hint { margin-bottom: 6px; }
+  #quiet { bottom: 78px; }
+  #eraBanner { max-width: 92vw; padding: 14px 18px; }
+  #eraBanner h4 { font-size: 18px; }
+  #cardVox { height: 170px; }
+}
+
+/* Schermi bassi (telefono in orizzontale): la cronaca sparisce, resta la carta. */
+@media (max-height: 460px) {
+  #eventLog { display: none; }
+  #legend { max-height: 60vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+}
