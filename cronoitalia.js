@@ -845,7 +845,20 @@ window.addEventListener('resize', () => {
 function inApp() {
   return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 }
-if (inApp()) document.body.classList.add('capacitor');
+if (inApp()) {
+  document.body.classList.add('capacitor');
+  /* Il tasto Indietro di Android deve tornare indietro nell'app, non uscirne al
+     primo tocco: prima chiude il diorama a tutto schermo, poi la scheda, poi il
+     racconto; solo dalla carta esce davvero. */
+  const capApp = window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (capApp) capApp.addListener('backButton', () => {
+    if (voxPieno) aTuttoSchermo(false);
+    else if (schedaAperta) chiudiScheda();
+    else if (!quiet.classList.contains('hidden')) quiet.classList.add('hidden');
+    else if (stato.vista === 'racconto') tornaAllaCarta();
+    else capApp.exitApp();
+  });
+}
 
 disegnaSfondo();
 disegnaUnita();
