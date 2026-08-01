@@ -150,15 +150,12 @@ Due sole mesh, per reggere sul telefono:
 Niente `instanceColor`: raggruppare per colore evita di dipendere da come le
 varie build di three gestiscono i colori per istanza.
 
-**498 scene su misura su 498 eventi: una per ciascuno.** Le altre usano la scena per
-tipo, variata dal generatore seminato sull'id. Le scene stanno in tre file:
-le prime 36 nel motore, le altre in `cronoitalia-scene*.js`. `check-scene.js`
-li trova da solo con un glob, quindi aggiungere un volume non richiede di
-toccare il controllo. Si registrano con `VoxScena.registra`
-e attingono a `VoxScena.kit`, la libreria di elementi riusabili: `tempio`,
-`cattedrale`, `torre`, `mura`, `nave`, `folla`, `fuoco`, `bandiera`, `stelle`,
-`onde`, `fabbrica`, `ponte`, più `suolo`, `casa`, `albero`, `omino`. È il kit a
-rendere possibile una scena in dieci righe invece che in trenta.
+**498 scene su misura su 498 eventi: una per ciascuno.** Le prime 36 stanno nel
+motore, le altre nei sette volumi `cronoitalia-scene*.js`; `check-scene.js` li
+trova da solo con un glob, quindi aggiungerne uno non richiede di toccare il
+controllo. Si registrano con `VoxScena.registra` e attingono a `VoxScena.kit`
+(vedi sotto): è il kit a rendere possibile una scena in otto righe invece che
+in trenta.
 
 **Scene per tipo (7):** battaglia, guerra, viaggio, fondazione, scoperta,
 disastro, cultura. Ora nessun evento le usa più, ma restano: sono la rete di
