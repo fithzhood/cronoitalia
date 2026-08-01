@@ -33,10 +33,32 @@ const DEST_W = 300;                              // inquadratura dopo il viaggio
 
 /* ================= tempo ================= */
 
-const ANNO_MIN = -3300;
+const ANNO_MIN = -12000;                         // le incisioni dell'Addaura
 const ANNO_MAX = new Date().getFullYear();
-const FIN_PRIMA = 20, FIN_DOPO = 180;            // finestra di due secoli
-const VEL_BASE = 8;                              // anni per secondo reale a 1×
+const CORSA_SECONDI = 25;                        // durata reale di un racconto a 1×
+
+/* Il cursore degli anni non è lineare. Su quattordicimila anni, con una scala
+   uniforme gli ultimi mille — dove sta l'ottanta per cento degli eventi —
+   occuperebbero un quindicesimo della corsa. Con questa curva la metà destra
+   del cursore copre da circa il 300 a.C. a oggi. */
+const CURVA = 2.6;
+function annoDaSlider(s) {
+  const t = clamp(s / 1000, 0, 1);
+  return Math.round(ANNO_MAX - (ANNO_MAX - ANNO_MIN) * Math.pow(1 - t, CURVA));
+}
+function sliderDaAnno(y) {
+  const f = (ANNO_MAX - clamp(y, ANNO_MIN, ANNO_MAX)) / (ANNO_MAX - ANNO_MIN);
+  return Math.round(1000 * (1 - Math.pow(f, 1 / CURVA)));
+}
+
+/* Anche la finestra del racconto si adatta: due secoli hanno senso per il
+   Rinascimento, non per il Neolitico, dove fra un evento e l'altro passano
+   millenni. La velocità cresce insieme, così una corsa dura sempre ~25 secondi. */
+function ampiezzaFinestra(anno) {
+  if (anno < -1400) return Math.round(clamp(-anno / 7, 200, 2000));  // preistoria: millenni
+  if (anno < 1000) return 300;                                       // antichità e alto medioevo
+  return 200;                                                        // da lì in poi due secoli bastano
+}
 
 // Nella storia l'anno 0 non esiste (1 a.C. -> 1 d.C.): internamente si usa la
 // numerazione astronomica, così l'aritmetica è continua.
@@ -119,7 +141,7 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 const stato = { vista: 'carta', dest: null, anno: ANNO_MAX };
 
 const pb = {
-  da: 0, a: 0, cur: 0,
+  da: 0, a: 0, cur: 0, velocita: 8,
   attivo: false, vel: 1, raf: null, ultimoT: 0,
   eventi: [], mostrati: new Map(), eraPrima: false,
 };
@@ -441,13 +463,13 @@ function impostaAnno(y, conStriscione) {
   if (y === 0) y = 1;
   y = clamp(Math.round(y), ANNO_MIN, ANNO_MAX);
   stato.anno = y;
-  yearSlider.value = y;
+  yearSlider.value = sliderDaAnno(y);
   yearField.value = Math.abs(y);
   eraSelect.value = y < 0 ? 'aC' : 'dC';
   applicaPolitica(y, conStriscione !== false);
 }
 
-yearSlider.addEventListener('input', () => impostaAnno(+yearSlider.value));
+yearSlider.addEventListener('input', () => impostaAnno(annoDaSlider(+yearSlider.value)));
 
 function leggiCampoAnno() {
   let v = Math.round(+yearField.value);
@@ -507,9 +529,11 @@ function tornaAllaCarta() {
 
 function calcolaFinestra() {
   const a = toAstro(stato.anno);
-  const ampiezza = FIN_PRIMA + FIN_DOPO;
-  pb.da = clamp(Math.min(a - FIN_PRIMA, ANNO_MAX - ampiezza), toAstro(ANNO_MIN), ANNO_MAX);
+  const ampiezza = ampiezzaFinestra(stato.anno);
+  const prima = Math.round(ampiezza * .1);       // si atterra poco prima della data scelta
+  pb.da = clamp(Math.min(a - prima, ANNO_MAX - ampiezza), toAstro(ANNO_MIN), ANNO_MAX);
   pb.a = clamp(pb.da + ampiezza, toAstro(ANNO_MIN), ANNO_MAX);
+  pb.velocita = (pb.a - pb.da) / CORSA_SECONDI;
 }
 
 function inInquadratura(ev) {
@@ -564,7 +588,7 @@ speedBtn.addEventListener('click', () => {
 function tick(now) {
   const dt = Math.min(.1, (now - pb.ultimoT) / 1000);
   pb.ultimoT = now;
-  pb.cur = Math.min(pb.a, pb.cur + dt * VEL_BASE * pb.vel);
+  pb.cur = Math.min(pb.a, pb.cur + dt * pb.velocita * pb.vel);
   sincronizza(true);
   if (pb.cur >= pb.a) { pb.attivo = false; playBtn.innerHTML = '&#8635;'; return; }
   pb.raf = requestAnimationFrame(tick);
@@ -868,7 +892,7 @@ if (window.innerWidth < 760) {          // su telefono la legenda parte chiusa
   legendEl.classList.add('chiusa');
   legendToggle.textContent = '+';
 }
-yearSlider.max = ANNO_MAX;
+yearField.max = -ANNO_MIN;
 travelBtn.disabled = false;
 impostaAnno(ANNO_MAX, false);
 if (!daURL()) mostraStriscione(ERAS[eraA(ANNO_MAX)]);

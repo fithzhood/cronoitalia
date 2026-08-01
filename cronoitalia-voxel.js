@@ -35,6 +35,7 @@ const P = {
   fuoco: 0xe8703a, brace: 0xf2b23a, lava: 0xd2452a,
   cenere: 0x6b6660, fumo: 0x8f8a86, polvere: 0xb5aa9a,
   tela: 0xd8cfb8, pelle: 0xc99a72, blu: 0x3a5fa8, viola: 0x7b5ea8,
+  divisa: 0x6b7358,
   verdeIt: 0x3f9e5e, biancoIt: 0xf0f0ee, rossoIt: 0xc23b2f,
 };
 
@@ -76,11 +77,16 @@ Mondo.prototype.colonna = function (x, z, y0, h, c) {
   for (let y = 0; y < h; y++) this.p(x, y0 + y, z, c);
 };
 
-/* Terreno: una piastra quadrata con qualche dosso, più uno strato sotto. */
+/* Terreno: una piastra quadrata con qualche dosso, più uno strato sotto.
+ *
+ * L'altezza è una funzione liscia delle coordinate, senza rumore per cella:
+ * con il rumore due celle vicine potevano differire di due blocchi, e nel
+ * gradino si vedeva il vuoto sotto la piastra. Così il dislivello fra celle
+ * confinanti resta di un blocco al massimo, e i due strati bastano a chiudere. */
 function suolo(m, R, cSopra, cSotto, rng, rilievo) {
   rilievo = rilievo || 0;
   for (let x = -R; x <= R; x++) for (let z = -R; z <= R; z++) {
-    const h = rilievo ? Math.round(rilievo * (Math.sin(x * .5) * .5 + Math.cos(z * .45) * .5 + rng() * .4)) : 0;
+    const h = rilievo ? Math.round(rilievo * (Math.sin(x * .45) * .5 + Math.cos(z * .4) * .5)) : 0;
     m.p(x, h, z, cSopra);
     m.p(x, h - 1, z, cSotto);
   }
@@ -524,6 +530,895 @@ autosole(rng) {
   };
 },
 
+/* ---------------- preistoria e antichità ---------------- */
+
+otzi(rng) {
+  return {
+    cielo: 0x24374f, nebbia: 0x35495f, raggio: 0xdceaff, ambiente: .85,
+    statici(m) {
+      // una sella fra due creste, tutta neve e ghiaccio
+      for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) {
+        const h = Math.min(5, Math.round(Math.max(0, (Math.abs(x) - 6) * .9 + Math.sin(z * .5) * .6)));
+        m.p(x, 0, z, h > 0 ? P.roccia : P.neve);
+        m.p(x, -1, z, P.pietraScura);
+        for (let y = 1; y <= h; y++) m.p(x, y, z, y >= h ? P.neve : P.roccia);
+      }
+      for (let x = -4; x <= 4; x++) for (let z = -3; z <= 3; z++) m.p(x, 0, z, P.ghiaccio);
+    },
+    dinamici(d, t) {
+      // il corpo con l'arco e l'ascia di rame, e la neve che continua a scendere
+      for (let i = 0; i < 4; i++) d(-1.4 + i * .85, 1.05, 0, .95, i === 3 ? P.pelle : P.tela);
+      for (let i = 0; i < 5; i++) d(-1.5 + i * .8, 1.5, 1.7, .45, P.tronco);
+      d(-.6, 1.5, -1.7, .55, P.bronzo);
+      d(-1.2, 1.5, -1.7, .5, P.tronco);
+      for (let i = 0; i < 34; i++) {
+        const f = (t * .26 + i * .029) % 1;
+        d(((i * 6151) % 25) - 12, 13 - f * 13, ((i * 3571) % 25) - 12, .45, P.neve);
+      }
+      // vento: una velatura che passa
+      for (let i = 0; i < 10; i++)
+        d(-12 + ((t * 4 + i * 2.6) % 26), 3 + Math.sin(t + i) * .6, -7 + i, 1.2, P.ghiaccio);
+    },
+  };
+},
+
+nuraghi(rng) {
+  return {
+    cielo: 0x2c3446, raggio: 0xffe6b4,
+    statici(m) {
+      suolo(m, 12, P.erbaScura, P.terra, rng, 1);
+      // la torre tronco-conica, a filari che rientrano
+      for (let y = 0; y < 10; y++) {
+        const r = 4 - y * .28;
+        for (let x = -5; x <= 5; x++) for (let z = -5; z <= 5; z++) {
+          const dd = Math.hypot(x, z);
+          if (dd > r || dd < r - 1.2) continue;
+          m.p(x, y + 1, z, y % 2 ? P.pietra : P.pietraScura);
+        }
+      }
+      for (let z = -1; z <= 1; z++) m.p(3, 2, z, P.nero);          // l'ingresso
+      // le capanne circolari del villaggio
+      for (let k = 0; k < 6; k++) {
+        const a = k / 6 * Math.PI * 2, cx = Math.round(Math.cos(a) * 8), cz = Math.round(Math.sin(a) * 8);
+        for (let x = -2; x <= 2; x++) for (let z = -2; z <= 2; z++) {
+          const dd = Math.hypot(x, z);
+          if (dd > 2 || dd < 1.2) continue;
+          m.p(cx + x, 1, cz + z, P.pietra);
+          m.p(cx + x, 2, cz + z, P.pietra);
+        }
+        m.p(cx, 3, cz, P.legno);
+      }
+    },
+    dinamici(d, t) {
+      for (let i = 0; i < 7; i++) {                                // il gregge
+        const a = t * .25 + i * .9;
+        d(Math.cos(a) * (5 + i * .3), 1.5, Math.sin(a) * (5 + i * .3), .8, P.tela);
+      }
+      omino(d, Math.cos(t * .25) * 6.5, 1.1, Math.sin(t * .25) * 6.5 + 1.5, P.terraScura, P.pelle);
+      for (let i = 0; i < 8; i++)                                  // fumo dal villaggio
+        d(-5.6, 4 + ((t * 1.2 + i * .4) % 5), -5.6, .7, P.fumo);
+    },
+  };
+},
+
+canne(rng) {
+  return {
+    cielo: 0x2b2f24, raggio: 0xffdf9c,
+    statici(m) {
+      suolo(m, 12, P.terraScura, P.terra, rng, .8);
+      for (let z = -12; z <= 12; z++) { m.p(-11, 1, z, P.acqua); m.p(-10, 1, z, P.acqua); }
+      for (let i = 0; i < 3; i++) albero(m, 10, -8 + i * 8, 1, rng);
+    },
+    dinamici(d, t) {
+      /* L'accerchiamento in tre tempi: la massa romana spinge al centro, la linea
+         punica arretra a mezzaluna, le ali si chiudono alle spalle. */
+      const f = (t * .11) % 1;
+      for (let i = 0; i < 36; i++) {
+        const c = i % 9, r = Math.floor(i / 9);
+        omino(d, -7 + f * 6 - r * 1.15, 1.1, -4.6 + c * 1.15, P.rosso, P.pelle, .8);
+      }
+      for (let i = 0; i < 11; i++) {
+        const z = -5.5 + i * 1.1;
+        omino(d, 3.2 - Math.cos(z / 6) * 2.2 * Math.min(1, f * 2.4), 1.1, z, P.viola, P.pelle, .8);
+      }
+      const morsa = clamp01((f - .3) * 2.2);
+      for (let i = 0; i < 14; i++) {
+        const lato = i < 7 ? -1 : 1, k = i % 7;
+        omino(d, -8.5 + morsa * (6 + k * .5), 1.1, lato * (7 - morsa * 4.2) + k * .4 * lato, P.viola, P.pelle, .8);
+      }
+      for (let i = 0; i < 16; i++) {
+        const g = (t * .5 + i * .062) % 1;
+        d(-2 + Math.sin(i * 2.1) * 4, 1 + g * 3.2, -5 + (i % 10), .85 * (1 - g), P.polvere);
+      }
+    },
+  };
+},
+
+appia(rng) {
+  return {
+    cielo: 0x25344a, raggio: 0xffe8bc,
+    statici(m) {
+      suolo(m, 12, P.erbaScura, P.terra, rng, 1.4);
+      // basolato: la strada corre diagonale, con i cippi e i pini ai lati
+      for (let k = -12; k <= 12; k++) {
+        for (let w = -1; w <= 1; w++) m.p(k, 2, k * .35 + w | 0, P.pietraChiara);
+        if (k % 4 === 0) m.p(k, 3, (k * .35 | 0) + 2, P.marmoOmbra);
+      }
+      for (let i = 0; i < 5; i++) {
+        const x = -9 + i * 5, z = (x * .35 | 0) - 4;
+        m.colonna(x, z, 1, 3, P.tronco);
+        for (let dx = -2; dx <= 2; dx++) for (let dz = -2; dz <= 2; dz++)
+          if (Math.abs(dx) + Math.abs(dz) <= 2) m.p(x + dx, 5, z + dz, P.foglie);
+      }
+      for (let i = 0; i < 3; i++) {                                 // sepolcri sulla via
+        const x = -6 + i * 7, z = (x * .35 | 0) + 4;
+        m.guscio(x, 1, z, 3, 3, 3, P.cotto);
+        m.p(x + 1, 4, z + 1, P.marmo);
+      }
+    },
+    dinamici(d, t) {
+      const p = ((t * 2.2) % 26) - 13;                              // il carro
+      const zc = p * .35 | 0;
+      for (let i = 0; i < 4; i++) d(p + (i % 2) * 1.1, 3.4, zc + Math.floor(i / 2) * .9, 1, P.legno);
+      d(p + .5, 4.3, zc + .4, .9, P.tela);
+      d(p - 1.4, 3.2, zc - .3, 1, P.terraScura);
+      d(p - 2.4, 3.2, zc - .3, 1, P.terraScura);
+      for (let i = 0; i < 5; i++)                                   // viandanti
+        omino(d, ((p + 7 + i * 3) % 26) - 13, 3, ((p + 7 + i * 3) % 26 - 13) * .35 - 1 | 0, P.tela, P.pelle, .8);
+      for (let i = 0; i < 10; i++) {
+        const g = (t * .8 + i * .1) % 1;
+        d(p - 3 - g * 2, 3 + g, zc + .5, .7 * (1 - g), P.polvere);
+      }
+    },
+  };
+},
+
+alarico(rng) {
+  return {
+    cielo: 0x2a1c1a, nebbia: 0x3a2620, raggio: 0xffb87a, ambiente: .6,
+    statici(m) {
+      suolo(m, 12, P.pietraChiara, P.terra, rng);
+      for (let i = 0; i < 6; i++) { m.colonna(-7 + i * 3, -6, 1, 6, P.marmo); m.p(-7 + i * 3, 7, -6, P.marmoOmbra); }
+      for (let x = -8; x <= 8; x++) m.p(x, 8, -6, P.marmoOmbra);     // la trabeazione
+      for (let i = 0; i < 4; i++) casa(m, -8 + i * 5, 4, 4, 4, 3, P.cotto, P.tetto);
+      m.box(-2, 1, 0, 4, 1, 3, P.marmo);
+    },
+    dinamici(d, t) {
+      // incendi che salgono dai tetti e figure in fuga
+      for (let k = 0; k < 4; k++) {
+        const bx = -6 + k * 5, bz = 5.5;
+        for (let i = 0; i < 9; i++) {
+          const f = (t * .7 + i * .11 + k * .3) % 1;
+          d(bx + Math.sin(i * 2.4) * 1.2, 5 + f * 4, bz + Math.cos(i * 1.7) * 1.2,
+            1 - f * .6, f < .35 ? P.fuoco : f < .7 ? P.brace : P.fumo);
+        }
+      }
+      for (let i = 0; i < 9; i++) {
+        const p = ((t * 1.6 + i * 2.4) % 22) - 11;
+        omino(d, p, 1.1, -2 + (i % 5) * 1.3, i % 3 ? P.tela : P.nero, P.pelle, .8);
+      }
+      for (let i = 0; i < 6; i++) {                                  // colonne che cadono
+        const f = clamp01(Math.sin(t * .3) * 2 - .6);
+        d(-7 + i * 3, 7 - f * 5.4, -6 + f * 3, 1, P.marmo);
+      }
+    },
+  };
+},
+
+/* ---------------- tardo antico e medioevo ---------------- */
+
+'ravenna-mosaici'(rng) {
+  return {
+    cielo: 0x1a1d2a, nebbia: 0x24283a, raggio: 0xffe2a8, ambiente: .65, fronte: Math.PI / 2,
+    statici(m) {
+      suolo(m, 10, P.marmoOmbra, P.pietraScura, rng);
+      /* Una parete piana, non un catino: la curva a blocchi da questa camera
+         diventa una massa grumosa e mangia le tessere invece di mostrarle. */
+      for (let x = -9; x <= 9; x++) for (let y = 1; y <= 12; y++) {
+        if (y > 9 && Math.abs(x) < 9 - (y - 9) * 2.6) continue;      // l'arco sopra
+        m.p(x, y, -7, P.pietraChiara);
+      }
+      for (let z = -7; z <= 3; z++) for (let y = 1; y <= 10; y++) {
+        m.p(-9, y, z, P.pietraChiara);
+        m.p(9, y, z, P.pietraChiara);
+      }
+      for (const cx of [-6, 6]) {                                    // le due colonne
+        for (let y = 1; y <= 7; y++) m.p(cx, y, 2, P.marmo);
+        m.p(cx, 8, 2, P.marmoOmbra);
+        m.p(cx, 9, 2, P.oro);
+      }
+      for (let x = -9; x <= 9; x += 2) m.p(x, 11, 2, P.marmoOmbra);
+    },
+    dinamici(d, t) {
+      /* Le tessere calano riga per riga e compongono il fondo d'oro con la croce
+         e la cornice, poi il ciclo ricomincia. */
+      const f = (t * .14) % 1.3;
+      const W = 15, H = 9;
+      for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) {
+        const arrivo = clamp01((f - (r * W + c) / (W * H)) * 18);
+        if (arrivo <= 0) continue;
+        const croce = c === 7 || (r === 3 && c > 3 && c < 11);
+        const bordo = r === 0 || r === H - 1 || c === 0 || c === W - 1;
+        d(-7 + c, 2 + r + (1 - arrivo) * 6, -6.3, .92,
+          croce ? P.rosso : bordo ? P.blu : ((c + r) % 7 === 0 ? P.bronzo : P.oro));
+      }
+      omino(d, 0, 1.2, 4, P.viola, P.pelle, 1.1);
+      for (let i = 0; i < 8; i++) {                                  // pulviscolo nella luce
+        const g = (t * .25 + i * .12) % 1;
+        d(-6 + i * 1.7, 8 - g * 5, -2 + g * 3, .32, P.oro);
+      }
+    },
+  };
+},
+
+benedetto(rng) {
+  return {
+    cielo: 0x243449, raggio: 0xffeccc,
+    statici(m) {
+      // il monte, a gradoni
+      for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) {
+        const h = Math.max(0, Math.round(5 - Math.hypot(x, z) * .45));
+        m.p(x, h, z, h > 3 ? P.pietraChiara : P.erbaScura);
+        for (let y = 0; y < h; y++) m.p(x, y, z, P.roccia);
+      }
+      casa(m, -4, -3, 8, 7, 4, P.marmo, P.tetto, 6);                // l'abbazia
+      for (let y = 0; y < 8; y++) m.p(-5, 6 + y, -4, y > 5 ? P.tetto : P.marmoOmbra);
+      m.p(-5, 14, -4, P.oro);
+      for (let i = 0; i < 5; i++) albero(m, -10 + i * 5, 10, 1, rng);
+      for (let k = 0; k < 12; k++) m.p(Math.round(6 - k * .6), Math.max(0, 5 - Math.round(k * .45)) + 1, k - 3, P.sabbia);
+    },
+    dinamici(d, t) {
+      // i monaci salgono in fila lungo il sentiero
+      for (let i = 0; i < 7; i++) {
+        const k = ((t * 1.1 + i * 1.6) % 14);
+        const x = 6 - k * .6, y = Math.max(0, 5 - Math.round(k * .45)) + 1.1, z = k - 3;
+        omino(d, x, y, z, P.nero, P.pelle, .8);
+      }
+      const camp = Math.sin(t * 2.4) * .35;                          // la campana
+      d(-5 + camp, 12.6, -4, .8, P.bronzo);
+      for (let i = 0; i < 10; i++) {                                 // rintocchi
+        const f = (t * .5 + i * .1) % 1;
+        d(-5 + Math.cos(i * 1.9) * (1 + f * 5), 12.6 + Math.sin(i * 1.3) * f * 3, -4 + Math.sin(i * 1.9) * (1 + f * 5),
+          .4 * (1 - f), P.oro);
+      }
+    },
+  };
+},
+
+'palermo-emirato'(rng) {
+  return {
+    cielo: 0x22304a, raggio: 0xffeec0,
+    statici(m) {
+      suolo(m, 12, P.sabbia, P.terra, rng);
+      // i canali del giardino, a croce
+      for (let k = -11; k <= 11; k++) { m.p(k, 0, 0, P.acqua); m.p(0, 0, k, P.acqua); }
+      for (let k = -11; k <= 11; k++) { m.p(k, 1, 1, P.pietraChiara); m.p(k, 1, -1, P.pietraChiara); }
+      // il padiglione con la cupola rossa
+      m.guscio(-3, 1, 4, 7, 4, 6, P.marmo);
+      for (let y = 0; y < 3; y++) {
+        const r = 3 - y;
+        for (let x = -r; x <= r; x++) for (let z = -r; z <= r; z++)
+          if (x * x + z * z <= r * r) m.p(x, 5 + y, 7 + z, P.tetto);
+      }
+      m.p(0, 8, 7, P.oro);
+      m.colonna(-8, -6, 1, 9, P.marmo);                              // il minareto
+      m.p(-8, 10, -6, P.tetto);
+      for (let i = 0; i < 8; i++) {                                  // gli agrumi
+        const x = i < 4 ? -7 + i * 2 : 3 + (i - 4) * 2, z = i % 2 ? -5 : -8;
+        albero(m, x, z, 1, rng);
+        m.p(x + 1, 5, z, P.oro);
+        m.p(x - 1, 5, z + 1, P.oro);
+      }
+    },
+    dinamici(d, t) {
+      for (let k = -11; k <= 11; k += 2) {                           // l'acqua che scorre
+        d(k, .5 + Math.sin(t * 3 + k) * .18, 0, .9, P.acquaChiara);
+        d(0, .5 + Math.cos(t * 3 + k) * .18, k, .9, P.acquaChiara);
+      }
+      for (let i = 0; i < 6; i++) {                                  // zampilli
+        const f = (t * .8 + i * .17) % 1;
+        d(0, 1 + Math.sin(f * Math.PI) * 4, 0, .5, P.acquaChiara);
+        d(Math.cos(i) * f * 3, 1 + Math.sin(f * Math.PI) * 3, Math.sin(i) * f * 3, .4, P.acquaChiara);
+      }
+      omino(d, -4, 2, -3, P.tela, P.pelle);
+      omino(d, 4, 2, 2, P.verdeIt, P.pelle);
+    },
+  };
+},
+
+legnano(rng) {
+  return {
+    cielo: 0x27313c, raggio: 0xffe0a4,
+    statici(m) {
+      suolo(m, 12, P.erbaScura, P.terra, rng, 1);
+      for (let i = 0; i < 4; i++) albero(m, -11, -9 + i * 6, 1, rng);
+    },
+    dinamici(d, t) {
+      // il Carroccio al centro, l'urto attorno
+      const osc = Math.sin(t * 1.2) * .2;
+      for (let x = -2; x <= 2; x++) for (let z = -1; z <= 1; z++) d(x, 2 + osc, z, 1, P.legno);
+      for (const [x, z] of [[-2, -1], [2, -1], [-2, 1], [2, 1]]) d(x, 1.2 + osc, z, .8, P.tronco);
+      for (let y = 0; y < 6; y++) d(0, 3 + y + osc, 0, .7, P.tronco);
+      for (let y = 0; y < 3; y++) for (let k = 0; k < 3; k++)
+        d(.8 + k * .8, 7.5 - y + osc, 0, .8, y === 1 ? P.biancoIt : P.rossoIt);
+      // i cavalieri imperiali caricano, i comunali tengono
+      const carica = Math.sin(t * .8) * 3.4;
+      for (let i = 0; i < 10; i++) {
+        const z = -5 + (i % 5) * 2.2, fila = Math.floor(i / 5);
+        d(8 - carica + fila * 1.6, 1.6, z, 1.1, P.ferro);
+        omino(d, 8 - carica + fila * 1.6, 2.4, z, P.grigio, P.pelle, .8);
+      }
+      for (let i = 0; i < 18; i++) {
+        const a = i / 18 * Math.PI * 2;
+        omino(d, Math.cos(a) * 4.2, 1.1, Math.sin(a) * 3.4, P.rossoIt, P.pelle, .8);
+      }
+      for (let i = 0; i < 12; i++) {
+        const g = (t * .55 + i * .083) % 1;
+        d(3 + Math.sin(i * 2.3) * 3, 1 + g * 3, -4 + (i % 8), .8 * (1 - g), P.polvere);
+      }
+    },
+  };
+},
+
+'castel-del-monte'(rng) {
+  return {
+    cielo: 0x263349, raggio: 0xffeec8,
+    statici(m) {
+      // il poggio della Murgia
+      for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) {
+        const h = Math.max(0, Math.round(3 - Math.hypot(x, z) * .3));
+        m.p(x, h, z, h > 1 ? P.sabbia : P.erbaScura);
+        for (let y = 0; y < h; y++) m.p(x, y, z, P.pietraChiara);
+      }
+      // l'ottagono: otto lati e otto torri agli angoli
+      const R = 5.2, base = 4;
+      const ang = [];
+      for (let k = 0; k < 8; k++) {
+        const a = k / 8 * Math.PI * 2 + Math.PI / 8;
+        ang.push([Math.cos(a) * R, Math.sin(a) * R]);
+      }
+      for (let k = 0; k < 8; k++) {
+        const [x1, z1] = ang[k], [x2, z2] = ang[(k + 1) % 8];
+        for (let s = 0; s <= 10; s++) {
+          const x = Math.round(x1 + (x2 - x1) * s / 10), z = Math.round(z1 + (z2 - z1) * s / 10);
+          for (let y = 0; y < 6; y++) m.p(x, base + y, z, y === 5 ? P.marmoOmbra : P.marmo);
+        }
+        for (let y = 0; y < 9; y++)                                    // la torretta d'angolo
+          for (const [dx, dz] of [[0, 0], [1, 0], [0, 1], [1, 1]])
+            m.p(Math.round(x1) + dx, base + y, Math.round(z1) + dz, y > 7 ? P.marmoOmbra : P.marmo);
+      }
+    },
+    dinamici(d, t) {
+      for (let i = 0; i < 10; i++) {                                   // falchi in volo
+        const a = t * .5 + i * .63;
+        const r = 8 + Math.sin(t * .4 + i) * 2;
+        d(Math.cos(a) * r, 14 + Math.sin(a * 2 + t) * 2, Math.sin(a) * r, .55, P.nero);
+      }
+      for (let i = 0; i < 8; i++) {                                    // sentinelle
+        const a = i / 8 * Math.PI * 2 + Math.PI / 8;
+        omino(d, Math.cos(a) * 5.2, 13, Math.sin(a) * 5.2, P.rosso, P.pelle, .7);
+      }
+    },
+  };
+},
+
+meloria(rng) {
+  return {
+    cielo: 0x1d3049, nebbia: 0x27405c, raggio: 0xffe4b0,
+    statici(m) {
+      for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) m.p(x, 0, z, P.mare);
+      for (let x = -12; x <= -9; x++) for (let z = -12; z <= 12; z++) { m.p(x, 1, z, P.sabbia); m.p(x, 0, z, P.terra); }
+      m.colonna(-10, 0, 2, 5, P.pietraChiara);                        // la torre della secca
+      m.p(-10, 7, 0, P.brace);
+    },
+    dinamici(d, t) {
+      const urto = Math.sin(t * .6) * 2.6;
+      // due file di galee che si vengono addosso, con i remi
+      for (let g = 0; g < 4; g++) {
+        const z = -7 + g * 4.5;
+        for (const lato of [-1, 1]) {
+          const cx = lato * (5.5 - urto * lato * lato) * (lato < 0 ? 1 : 1) + lato * urto * -1;
+          const base = lato * 6 - lato * urto;
+          for (let i = 0; i < 8; i++) d(base + lato * i * .9, 1.2, z, 1, lato < 0 ? P.legno : P.tronco);
+          for (let i = 0; i < 5; i++) d(base + lato * (1 + i * .9), 2.1, z, .8, lato < 0 ? P.rosso : P.grigio);
+          for (let i = 0; i < 4; i++) {                               // i remi
+            const rem = Math.sin(t * 4 + i + g) * .5;
+            d(base + lato * (2 + i * 1.4), 1.4, z + 1.2 + rem, .5, P.legno);
+            d(base + lato * (2 + i * 1.4), 1.4, z - 1.2 - rem, .5, P.legno);
+          }
+          d(base + lato * 7.4, 1.6, z, .7, P.ferro);                  // il rostro
+        }
+      }
+      for (let x = -12; x <= 12; x += 3) for (let z = -12; z <= 12; z += 4)
+        d(x, .6 + Math.sin(t * 1.8 + x * .4 + z * .3) * .28, z, 1.8, P.acquaChiara);
+    },
+  };
+},
+
+/* ---------------- Rinascimento ---------------- */
+
+cenacolo(rng) {
+  return {
+    cielo: 0x1e2433, nebbia: 0x2a3040, raggio: 0xffefd4, ambiente: .7, fronte: Math.PI / 2,
+    statici(m) {
+      suolo(m, 10, P.cotto, P.pietraScura, rng);
+      // il refettorio: tre pareti e il soffitto a cassettoni, aperto verso la camera
+      for (let x = -8; x <= 8; x++) for (let y = 1; y <= 8; y++) m.p(x, y, -7, P.tela);
+      for (let z = -7; z <= 4; z++) for (let y = 1; y <= 8; y++) { m.p(-8, y, z, P.tela); m.p(8, y, z, P.tela); }
+      for (let x = -8; x <= 8; x += 2) for (let z = -7; z <= 4; z += 2) m.p(x, 9, z, P.legno);
+      for (const wx of [-4, 0, 4])                                    // le tre finestre in fondo
+        for (let x = wx - 1; x <= wx + 1; x++) for (let y = 4; y <= 6; y++) m.p(x, y, -7, P.acquaChiara);
+      m.box(-6, 1, -3, 13, 1, 2, P.legno);                            // la tavola
+      for (let x = -6; x <= 6; x++) m.p(x, 3, -3, P.tela);
+    },
+    dinamici(d, t) {
+      // i tredici: il gruppo si muove a onde, come nell'attimo dell'annuncio
+      for (let i = 0; i < 13; i++) {
+        const x = -6 + i;
+        const scossa = i === 6 ? 0 : Math.sin(t * 1.6 + Math.abs(i - 6) * .9) * .22;
+        const veste = i === 6 ? P.tela : (i % 3 === 0 ? P.rosso : i % 3 === 1 ? P.blu : P.viola);
+        omino(d, x, 2 + Math.abs(scossa) * .4, -4.4 + scossa, veste, P.pelle, i === 6 ? 1 : .85);
+      }
+      for (let i = 0; i < 7; i++) d(-5 + i * 1.7, 3.5, -3, .5, P.marmo);   // le stoviglie
+      for (let i = 0; i < 10; i++) {                                        // pulviscolo nella luce
+        const f = (t * .2 + i * .1) % 1;
+        d(-4 + (i % 3) * 4 + Math.sin(t + i), 6 - f * 4, -6 + f * 4, .35, P.oro);
+      }
+    },
+  };
+},
+
+sistina(rng) {
+  return {
+    cielo: 0x1c1f2c, nebbia: 0x272b3a, raggio: 0xffe8bc, ambiente: .6, fronte: Math.PI / 2,
+    statici(m) {
+      suolo(m, 10, P.marmoOmbra, P.pietraScura, rng);
+      for (let x = -9; x <= 9; x++) for (let y = 1; y <= 9; y++) { m.p(x, y, -8, P.tela); }
+      for (let z = -8; z <= 6; z++) for (let y = 1; y <= 9; y++) { m.p(-9, y, z, P.tela); m.p(9, y, z, P.tela); }
+      // la volta a botte
+      for (let z = -8; z <= 6; z++) for (let a = 0; a <= 18; a++) {
+        const an = Math.PI * a / 18;
+        m.p(Math.round(-Math.cos(an) * 9), 10 + Math.round(Math.sin(an) * 3), z, P.pietraChiara);
+      }
+      // il ponteggio
+      for (let x = -6; x <= 6; x++) for (let z = -3; z <= 1; z++) m.p(x, 8, z, P.legno);
+      for (const x of [-6, -2, 2, 6]) for (let y = 1; y < 8; y++) { m.p(x, y, -3, P.tronco); m.p(x, y, 1, P.tronco); }
+    },
+    dinamici(d, t) {
+      /* Il colore compare sulla volta campata dopo campata, poi si spegne e
+         Michelangelo ricomincia. */
+      const f = (t * .13) % 1.2;
+      const colori = [P.rosso, P.oro, P.blu, P.verdeIt, P.viola, P.tela];
+      // z parte da -8: in JavaScript il resto di un negativo è negativo, e senza
+      // riportarlo in campo l'indice del colore diventa undefined.
+      const tinta = i => colori[((i % colori.length) + colori.length) % colori.length];
+      for (let z = -8; z <= 6; z++) {
+        const quando = (z + 8) / 15;
+        if (f < quando) continue;
+        for (let a = 3; a <= 15; a += 2) {
+          const an = Math.PI * a / 18;
+          d(-Math.cos(an) * 8.4, 10 + Math.sin(an) * 2.8, z, .9, tinta(z + a));
+        }
+      }
+      // l'uomo sdraiato sul ponteggio, il braccio che va e viene
+      const bx = -5 + ((t * 1.4) % 12);
+      for (let i = 0; i < 3; i++) d(bx + i * .8, 9.1, -1, .85, P.terraScura);
+      d(bx + 2.4, 9.1, -1, .8, P.pelle);
+      d(bx + 1.6, 9.9 + Math.sin(t * 4) * .5, -1, .5, P.pelle);
+      for (let i = 0; i < 6; i++) d(-7 + i * .9, 8.6, 0, .45, tinta(i));    // i colori sul tavolato
+    },
+  };
+},
+
+colombo(rng) {
+  return {
+    cielo: 0x213a58, raggio: 0xffe0a8,
+    statici(m) {
+      for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) m.p(x, 0, z, P.mare);
+      for (let x = 4; x <= 12; x++) for (let z = -12; z <= 12; z++) { m.p(x, 1, z, P.sabbia); m.p(x, 0, z, P.terra); }
+      for (let z = -6; z <= 6; z++) { m.p(4, 1, z, P.pietraChiara); m.p(5, 1, z, P.pietraChiara); }  // la banchina
+      for (let i = 0; i < 4; i++) casa(m, 7 + (i % 2) * 3, -6 + i * 3, 3, 3, 3, P.tela, P.tetto, 2);
+      m.colonna(6, -8, 2, 6, P.pietraChiara);
+      m.p(6, 8, -8, P.brace);                                        // il faro
+    },
+    dinamici(d, t) {
+      const f = (t * .09) % 1;
+      const sx = 3 - f * 15;                                          // la caravella che si allontana
+      for (let i = 0; i < 7; i++) d(sx + i * .85, 1.3 + Math.sin(t * 1.4) * .12, 0, 1, P.legno);
+      for (let i = 0; i < 4; i++) d(sx + 1.5 + i * .85, 2.1, 0, .85, P.tronco);
+      for (const [mx, h] of [[1.4, 5], [3.2, 6.5], [5, 4.5]]) {
+        for (let y = 0; y < h; y++) d(sx + mx, 2.6 + y, 0, .4, P.tronco);
+        for (let k = 0; k < 3; k++) d(sx + mx, 3.6 + k * 1.4, 0, 1.5 - k * .25, P.tela);
+      }
+      d(sx + 3.2, 9.4, 0, .5, P.rossoIt);
+      for (let i = 0; i < 12; i++)                                    // la scia
+        d(sx + 6 + i * .8, .8, Math.sin(i * .8) * .5, 1.1 * (1 - i / 14), P.acquaChiara);
+      for (let i = 0; i < 6; i++)                                     // chi saluta dalla banchina
+        omino(d, 4.5, 2, -4 + i * 1.6, i % 2 ? P.rosso : P.blu, P.pelle, .8);
+      for (let x = -12; x <= 3; x += 3) for (let z = -12; z <= 12; z += 4)
+        d(x, .6 + Math.sin(t * 1.6 + x * .4 + z * .3) * .25, z, 1.8, P.acquaChiara);
+    },
+  };
+},
+
+'sacco-roma'(rng) {
+  return {
+    cielo: 0x2a1b18, nebbia: 0x3a2620, raggio: 0xffb478, ambiente: .55,
+    statici(m) {
+      suolo(m, 12, P.pietraChiara, P.terra, rng);
+      for (let z = -12; z <= 12; z++) for (let x = -12; x <= -7; x++) m.p(x, 1, z, P.acqua);   // il Tevere
+      for (let x = -7; x <= -6; x++) for (let z = -2; z <= 2; z++) m.p(x, 2, z, P.pietraChiara); // il ponte
+      // Castel Sant'Angelo: tamburo cilindrico su basamento quadro
+      m.box(-2, 1, -3, 8, 2, 8, P.pietraChiara);
+      for (let y = 0; y < 7; y++) for (let x = -3; x <= 3; x++) for (let z = -3; z <= 3; z++) {
+        const dd = Math.hypot(x, z);
+        if (dd > 3.4 || dd < 2.3) continue;
+        m.p(2 + x, 3 + y, 1 + z, y % 3 === 2 ? P.marmoOmbra : P.marmo);
+      }
+      m.colonna(2, 1, 10, 3, P.marmo);
+      m.p(2, 13, 1, P.bronzo);
+      for (let i = 0; i < 4; i++) casa(m, 8, -8 + i * 5, 3, 4, 3, P.cotto, P.tetto);
+    },
+    dinamici(d, t) {
+      // il corridoio verso il castello: figure che scappano dentro
+      for (let i = 0; i < 8; i++) {
+        const p = ((t * 1.8 + i * 1.9) % 14);
+        omino(d, 9 - p, 2.2, 6 - p * .5, i % 2 ? P.viola : P.tela, P.pelle, .8);
+      }
+      for (let k = 0; k < 4; k++) {                                   // gli incendi in città
+        const bx = 8, bz = -8 + k * 5;
+        for (let i = 0; i < 8; i++) {
+          const f = (t * .8 + i * .12 + k * .25) % 1;
+          d(bx + 1 + Math.sin(i * 2.4), 5 + f * 4, bz + 1.5 + Math.cos(i * 1.7),
+            1 - f * .6, f < .35 ? P.fuoco : f < .7 ? P.brace : P.fumo);
+        }
+      }
+      for (let i = 0; i < 12; i++) {                                  // i lanzichenecchi
+        const a = t * .25 + i * .52;
+        omino(d, Math.cos(a) * 7.5, 1.1, Math.sin(a) * 7.5, P.nero, P.pelle, .85);
+        d(Math.cos(a) * 7.5, 3.2, Math.sin(a) * 7.5, .35, P.ferro);
+      }
+    },
+  };
+},
+
+lepanto(rng) {
+  return {
+    cielo: 0x1e3350, nebbia: 0x2a4262, raggio: 0xffe0a0,
+    statici(m) {
+      for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) m.p(x, 0, z, P.mare);
+    },
+    dinamici(d, t) {
+      const avanti = Math.sin(t * .35) * 2.2;
+      /* Le due formazioni: la Lega in linea, gli Ottomani a mezzaluna. Ogni
+         galea è uno scafo con l'albero, il vessillo e i remi che battono. */
+      const galea = (cx, cz, verso, scafo, vess, k) => {
+        for (let i = 0; i < 7; i++) d(cx + i * .8 * verso, 1.2, cz, .95, scafo);
+        for (let y = 0; y < 4; y++) d(cx + 2.4 * verso, 2 + y, cz, .5, P.tronco);
+        d(cx + 2.4 * verso, 6, cz, .9, vess);
+        d(cx + 5.6 * verso, 1.5, cz, .6, P.ferro);
+        for (let i = 0; i < 3; i++) {
+          const rem = Math.sin(t * 3.5 + i + k) * .45;
+          d(cx + (1 + i * 1.6) * verso, 1.5, cz + 1.1 + rem, .45, P.legno);
+          d(cx + (1 + i * 1.6) * verso, 1.5, cz - 1.1 - rem, .45, P.legno);
+        }
+      };
+      for (let k = 0; k < 5; k++) {
+        const z = -8 + k * 4;
+        galea(-7 + avanti, z, 1, P.legno, P.rossoIt, k);
+        galea(7 - avanti + Math.abs(k - 2) * 1.4, z, -1, P.tronco, P.verdeIt, k + 7);
+      }
+      for (let i = 0; i < 14; i++) {                                  // le cannonate
+        const f = (t * 1.1 + i * .07) % 1;
+        if (f > .4) continue;
+        d(-3 + i * .45, 2.4 + Math.sin(f * Math.PI) * 1.2, -8 + (i % 5) * 4, .9 * (1 - f * 2), f < .15 ? P.brace : P.fumo);
+      }
+      for (let x = -12; x <= 12; x += 3) for (let z = -12; z <= 12; z += 4)
+        d(x, .6 + Math.sin(t * 1.8 + x * .4 + z * .3) * .26, z, 1.8, P.acquaChiara);
+    },
+  };
+},
+
+/* ---------------- età moderna ---------------- */
+
+'galileo-cannocchiale'(rng) {
+  return {
+    cielo: 0x0e1526, nebbia: 0x16203a, raggio: 0x9fb8e0, ambiente: .45,
+    statici(m) {
+      suolo(m, 10, P.pietraChiara, P.pietra, rng);
+      for (let x = -10; x <= 10; x++) { m.p(x, 1, -9, P.marmoOmbra); m.p(x, 2, -9, P.marmo); }  // il parapetto
+      for (let z = -9; z <= 9; z++) { m.p(-10, 1, z, P.marmoOmbra); m.p(10, 1, z, P.marmoOmbra); }
+      casa(m, -9, 5, 5, 5, 4, P.cotto, P.tetto, 2);
+      for (let i = 0; i < 3; i++) m.colonna(3 + i * 3, 7, 2, 4, P.marmo);
+    },
+    dinamici(d, t) {
+      // il cannocchiale sul treppiede, puntato in alto
+      const mira = Math.sin(t * .3) * .5;
+      for (let i = 0; i < 6; i++) d(-1 + i * .5, 3.4 + i * .42 + mira, -2, .55, P.tronco);
+      for (const [dx, dz] of [[-.8, -.8], [.8, -.8], [0, .9]])
+        for (let y = 0; y < 3; y++) d(dx * (1 + y * .3), 1.2 + y, -2 + dz * (1 + y * .3), .35, P.legno);
+      omino(d, -2.6, 1.2, -1.4, P.nero, P.pelle);
+      // Giove e i quattro satelliti medicei
+      d(6, 13, -6, 1.6, P.sabbia);
+      for (let i = 0; i < 4; i++) {
+        const a = t * (.7 + i * .28) + i * 1.6;
+        d(6 + Math.cos(a) * (2.4 + i * 1.1), 13 + Math.sin(a) * .5, -6 + Math.sin(a) * (2.4 + i * 1.1) * .4, .5, P.biancoIt);
+      }
+      for (let i = 0; i < 22; i++) {                                  // le stelle
+        const a = i * 2.399;
+        d(Math.cos(a) * (9 + (i % 5)), 11 + (i % 7), Math.sin(a) * (9 + (i % 5)) - 3,
+          .3, i % 4 ? P.biancoIt : P.oro);
+      }
+    },
+  };
+},
+
+'reggia-caserta'(rng) {
+  return {
+    cielo: 0x243449, raggio: 0xffeed0,
+    statici(m) {
+      suolo(m, 12, P.erba, P.terra, rng, .6);
+      // la facciata lunga, in fondo
+      for (let x = -10; x <= 10; x++) for (let y = 1; y <= 7; y++)
+        m.p(x, y, -10, (x % 3 === 0 && y > 2 && y < 6) ? P.marmoOmbra : P.marmo);
+      for (let x = -10; x <= 10; x++) m.p(x, 8, -10, P.tetto);
+      for (let x = -3; x <= 3; x++) for (let y = 1; y <= 8; y++) m.p(x, y, -9, P.marmo);
+      m.p(0, 9, -9, P.oro);
+      // le vasche in fila, in prospettiva verso la reggia
+      for (let k = 0; k < 5; k++) {
+        const z = 8 - k * 4, w = 4 - k * .5;
+        for (let x = -w; x <= w; x++) for (let dz = -1; dz <= 1; dz++) {
+          m.p(Math.round(x), 1, z + dz, P.acqua);
+          m.p(Math.round(x), 0, z + dz, P.pietraChiara);
+        }
+        for (let x = -w - 1; x <= w + 1; x++) m.p(Math.round(x), 1, z + 2, P.pietraChiara);
+      }
+      for (let i = 0; i < 6; i++) { albero(m, -9, -6 + i * 3, 1, rng); albero(m, 9, -6 + i * 3, 1, rng); }
+    },
+    dinamici(d, t) {
+      for (let k = 0; k < 5; k++) {                                   // gli zampilli
+        const z = 8 - k * 4;
+        for (let i = 0; i < 5; i++) {
+          const f = ((t * .9 + i * .2 + k * .13) % 1);
+          d(-1.6 + i * .8, 1.4 + Math.sin(f * Math.PI) * (3.4 - k * .4), z, .45, P.acquaChiara);
+        }
+        for (let x = -3; x <= 3; x += 2)
+          d(x, 1.3 + Math.sin(t * 2 + x + k) * .15, z, 1.4, P.acquaChiara);
+      }
+      for (let i = 0; i < 6; i++)                                     // la corte a passeggio
+        omino(d, -5 + i * 2, 2, 4 + (i % 2) * 2, i % 2 ? P.viola : P.tela, P.pelle, .8);
+    },
+  };
+},
+
+volta(rng) {
+  return {
+    cielo: 0x1a2130, nebbia: 0x252d3e, raggio: 0xffe6b8, ambiente: .6, fronte: Math.PI / 2,
+    statici(m) {
+      suolo(m, 9, P.legno, P.tronco, rng);
+      for (let x = -8; x <= 8; x++) for (let y = 1; y <= 5; y++) m.p(x, y, -8, P.tela);   // lo studio,
+      for (let z = -8; z <= 5; z++) for (let y = 1; y <= 5; y++) {                        // aperto davanti
+        m.p(-8, y, z, P.tela); m.p(8, y, z, P.tela);
+      }
+      for (let x = -8; x <= 8; x += 2) for (let z = -8; z <= 5; z += 2) m.p(x, 6, z, P.tronco);
+      m.box(-3, 1, -2, 7, 2, 4, P.legno);                             // il tavolo
+      for (let i = 0; i < 4; i++) m.p(-6, 2 + i, -7, P.legno);        // lo scaffale
+      for (let i = 0; i < 5; i++) m.p(-6 + i, 5, -7, P.cotto);
+    },
+    dinamici(d, t) {
+      // la pila: dischi alternati che si impilano, poi la scintilla
+      const f = (t * .22) % 1.4;
+      const n = Math.min(14, Math.floor(f * 20));
+      for (let i = 0; i < n; i++)
+        d(0, 3.2 + i * .32, 0, 1.1, i % 3 === 0 ? P.ferro : i % 3 === 1 ? P.bronzo : P.tela);
+      if (n >= 14) {
+        for (let i = 0; i < 9; i++) {                                 // l'arco elettrico
+          const g = (t * 6 + i * .3) % 1;
+          d(Math.sin(i * 1.9) * .8, 8 + i * .28, Math.cos(i * 1.7) * .8, .35 * (1 - g), P.oro);
+        }
+        for (let i = 0; i < 6; i++)
+          d(-2 + i * .8, 3.4 + Math.sin(t * 8 + i) * .2, 2.4, .3, P.brace);
+      }
+      omino(d, -4, 3.2, 1.6, P.nero, P.pelle);
+      for (let i = 0; i < 4; i++) d(3 + i * .5, 3.4, -1, .4, P.marmo);
+    },
+  };
+},
+
+/* ---------------- Risorgimento ---------------- */
+
+'cinque-giornate'(rng) {
+  return {
+    cielo: 0x2a3040, nebbia: 0x363d50, raggio: 0xffe0a8,
+    statici(m) {
+      suolo(m, 12, P.pietraChiara, P.terra, rng);
+      // una via stretta fra due file di case
+      for (let i = 0; i < 5; i++) {
+        casa(m, -11 + i * 2, -10 + i * 4, 4, 4, 5, P.cotto, P.tetto, 1);
+        casa(m, 7, -10 + i * 4, 4, 4, 5, P.tela, P.tetto, 1);
+      }
+      for (let z = -12; z <= 12; z++) for (let x = -2; x <= 4; x++) m.p(x, 1, z, P.pietra);
+    },
+    dinamici(d, t) {
+      // la barricata: mobili, botti e una carrozza rovesciata
+      const scossa = Math.sin(t * 8) * .06;
+      const roba = [[0, 2, 1.2, P.legno], [1.4, 2, 1, P.tronco], [-1, 2.2, 1.1, P.legno],
+                    [.6, 3, 1, P.tronco], [2.2, 2.6, .9, P.legno], [-1.6, 3, .9, P.tronco],
+                    [1, 4, .9, P.legno], [-.4, 4.2, .8, P.tronco], [2.6, 3.6, .8, P.legno]];
+      for (const [x, y, s, c] of roba) d(x + scossa, y, 0, s, c);
+      for (let i = 0; i < 5; i++) d(-2 + i * 1.4, 2.4, 1.4, 1, P.grigio);   // la carrozza
+      d(-2, 1.4, 2.2, .8, P.tronco); d(2.4, 1.4, 2.2, .8, P.tronco);
+      // i tricolori sopra la barricata
+      for (let k = 0; k < 3; k++) {
+        const bx = -1.6 + k * 2.2, on = Math.sin(t * 2 + k) * .25;
+        for (let y = 0; y < 4; y++) d(bx, 5 + y, 0, .35, P.tronco);
+        for (let i = 0; i < 3; i++)
+          d(bx + .7 + i * .7, 8.4 + on, 0 + on * .5, .7, [P.verdeIt, P.biancoIt, P.rossoIt][i]);
+      }
+      for (let i = 0; i < 10; i++)                                    // gli insorti dietro
+        omino(d, -2 + (i % 5) * 1.5, 2, 3.5 + Math.floor(i / 5) * 1.4, i % 3 ? P.tela : P.nero, P.pelle, .85);
+      for (let i = 0; i < 8; i++) {                                   // gli austriaci si ritirano
+        const p = ((t * 1.2 + i * 1.4) % 16);
+        omino(d, 0 + (i % 3) - 1, 2, -3 - p, P.biancoIt, P.pelle, .85);
+      }
+    },
+  };
+},
+
+teano(rng) {
+  return {
+    cielo: 0x263a4e, raggio: 0xffe8bc,
+    statici(m) {
+      suolo(m, 12, P.erbaScura, P.terra, rng, 1.6);
+      for (let x = -12; x <= 12; x++) for (let z = -1; z <= 1; z++) m.p(x, 2, z, P.sabbia);
+      for (let i = 0; i < 5; i++) albero(m, -9 + i * 5, 6, 1, rng);
+      casa(m, 8, -8, 4, 3, 3, P.tela, P.tetto, 2);
+      m.colonna(-9, -7, 2, 4, P.pietraChiara);
+    },
+    dinamici(d, t) {
+      /* I due cavalieri si avvicinano, si fermano, si danno la mano, poi la
+         scena riparte: è l'unico gesto che serve a raccontare l'incontro. */
+      const f = (t * .16) % 1;
+      const av = Math.min(1, f * 2.2);
+      const strette = f > .5 ? Math.sin((f - .5) * Math.PI * 4) * .5 : 0;
+      const coppia = (x, verso, veste) => {
+        for (let i = 0; i < 3; i++) d(x + i * .9 * verso, 3.2, 0, 1.1, P.terraScura);
+        d(x + 2.4 * verso, 4, 0, .9, P.terraScura);
+        d(x, 3, .8, .6, P.terraScura); d(x, 3, -.8, .6, P.terraScura);
+        omino(d, x + .8 * verso, 4.2, 0, veste, P.pelle, .9);
+        d(x + 1.9 * verso, 5.2 + strette, 0, .45, P.pelle);           // la mano tesa
+      };
+      coppia(-8 + av * 5.4, 1, P.rossoIt);
+      coppia(8 - av * 5.4, -1, P.blu);
+      for (let i = 0; i < 8; i++)                                     // il seguito
+        omino(d, -11 + (i % 4) * 1.2 + (i > 3 ? 18 : 0), 3, -2.4 - (i % 2) * 1.2, P.grigio, P.pelle, .75);
+      for (let i = 0; i < 10; i++) {
+        const g = (t * .6 + i * .1) % 1;
+        d(-4 + i * .9, 2.6 + g * 1.4, 1.6, .7 * (1 - g), P.polvere);
+      }
+    },
+  };
+},
+
+/* ---------------- Novecento ---------------- */
+
+caporetto(rng) {
+  return {
+    cielo: 0x1c2028, nebbia: 0x272c36, raggio: 0xa8b4c4, ambiente: .5,
+    statici(m) {
+      // una valle: strada in fondo, versanti ai lati
+      for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) {
+        const h = Math.min(7, Math.round(Math.max(0, (Math.abs(x) - 4) * 1.1)));
+        m.p(x, 0, z, h > 4 ? P.roccia : h > 0 ? P.erbaScura : P.terraScura);
+        m.p(x, -1, z, P.pietraScura);
+        for (let y = 1; y <= h; y++) m.p(x, y, z, y >= h ? (y > 5 ? P.neve : P.foglieScure) : P.roccia);
+      }
+      for (let z = -12; z <= 12; z++) for (let x = -3; x <= 3; x++) m.p(x, 1, z, P.terra);
+      for (let i = 0; i < 4; i++) { m.colonna(-4, -9 + i * 6, 1, 2, P.tronco); m.p(-4, 3, -9 + i * 6, P.legno); }
+    },
+    dinamici(d, t) {
+      // la colonna che ripiega, sotto la pioggia
+      const giro = v => ((v + 13) % 26 + 26) % 26 - 13;
+      const marcia = t * 1.3;
+      for (let i = 0; i < 22; i++) {
+        const z = giro(marcia + i * 1.25);
+        omino(d, -2.4 + (i % 5) * 1.2, 2, z, P.divisa, P.pelle, .8);
+      }
+      for (let k = 0; k < 3; k++) {                                   // i carri
+        const z = giro(marcia + 6 + k * 8);
+        for (let i = 0; i < 4; i++) d(-1.5 + (i % 2) * 1.4, 2.2, z + Math.floor(i / 2) * 1.1, 1, P.legno);
+        d(-.8, 3.1, z + .5, .9, P.tela);
+        d(-.8, 2, z - 1.2, .9, P.terraScura);
+      }
+      for (let i = 0; i < 40; i++) {                                  // pioggia
+        const f = (t * 1.4 + i * .025) % 1;
+        d(((i * 6151) % 25) - 12, 12 - f * 12, ((i * 3571) % 25) - 12, .28, P.ghiaccio);
+      }
+    },
+  };
+},
+
+liberazione(rng) {
+  /* Le case stanno staccate attorno alla piazza: chiudendo l'anello a muro
+     pieno la piazza spariva e restava solo una massa di mattoni. */
+  const isolati = [];
+  for (let k = 0; k < 7; k++) { isolati.push([-11 + k * 3, -11]); isolati.push([-11 + k * 3, 9]); }
+  for (let k = 0; k < 4; k++) { isolati.push([-11, -7 + k * 4]); isolati.push([9, -7 + k * 4]); }
+  return {
+    cielo: 0x24405e, raggio: 0xfff0cc,
+    statici(m) {
+      suolo(m, 12, P.pietraChiara, P.terra, rng);
+      for (let i = 0; i < isolati.length; i++) {
+        const [x, z] = isolati[i];
+        casa(m, x, z, 3, 3, 3 + (i % 3), i % 2 ? P.cotto : P.tela, P.tetto, 1);
+      }
+    },
+    dinamici(d, t) {
+      // le bandiere salgono sui tetti, la piazza si riempie
+      const f = (t * .18) % 1.3;
+      for (let k = 0; k < 6; k++) {
+        const [x, z] = isolati[(k * 4) % isolati.length];
+        const base = 5 + ((k * 4) % 3);
+        for (let y = 0; y < 3; y++) d(x + 1, base + y, z + 1, .35, P.tronco);
+        const su = clamp01((f - k * .1) * 3);
+        if (su <= 0) continue;
+        const on = Math.sin(t * 3 + k) * .3;
+        for (let i = 0; i < 3; i++)
+          d(x + 1.7 + i * .7, base + 2 + su * 2.2 + on * i * .3, z + 1 + on * .3, .7,
+            [P.verdeIt, P.biancoIt, P.rossoIt][i]);
+      }
+      for (let i = 0; i < 46; i++) {                                  // la folla
+        const a = i * 2.399, r = 1 + (i % 8) * .85;
+        const salto = Math.abs(Math.sin(t * 3 + i)) * .35;
+        omino(d, Math.cos(a) * r, 1.1 + salto, Math.sin(a) * r - 1,
+          i % 4 === 0 ? P.rossoIt : P.grigio, P.pelle, .75);
+      }
+      for (let i = 0; i < 14; i++) {                                  // coriandoli
+        const g = (t * .5 + i * .07) % 1;
+        d(Math.cos(i * 1.7) * 6, 12 - g * 10, Math.sin(i * 1.7) * 6 - 1, .3,
+          [P.verdeIt, P.biancoIt, P.rossoIt][i % 3]);
+      }
+    },
+  };
+},
+
+'alluvione-firenze'(rng) {
+  return {
+    cielo: 0x232a33, nebbia: 0x2f3843, raggio: 0xc8bca4, ambiente: .55,
+    statici(m) {
+      suolo(m, 12, P.pietraChiara, P.terra, rng);
+      for (let i = 0; i < 4; i++) {
+        casa(m, -11 + i, -10 + i * 5, 4, 4, 5, P.cotto, P.tetto, 1);
+        casa(m, 7, -10 + i * 5, 4, 4, 5, P.tela, P.tetto, 1);
+      }
+      for (let z = -12; z <= 12; z++) for (let x = -2; x <= 4; x++) m.p(x, 1, z, P.pietra);
+      for (let i = 0; i < 3; i++) { m.colonna(6, -6 + i * 6, 2, 3, P.tronco); m.p(6, 5, -6 + i * 6, P.brace); }
+    },
+    dinamici(d, t) {
+      /* Prima l'acqua nera sale nella via e i libri galleggiano, poi si ritira e
+         restano le mani che li raccolgono: gli angeli del fango. */
+      const f = (t * .13) % 1;
+      const livello = f < .5 ? clamp01(f * 3) : clamp01((1 - f) * 3);
+      for (let z = -12; z <= 12; z += 2) for (let x = -2; x <= 4; x += 2)
+        d(x, 1.4 + livello * 2 + Math.sin(t * 2 + x + z) * .18, z, 1.9, P.terraScura);
+      for (let i = 0; i < 14; i++) {
+        const z = ((t * 1.8 + i * 2) % 26) - 13;
+        d(-1 + (i % 6), 2.1 + livello * 2, z, .7, [P.cotto, P.tela, P.legno][i % 3]);
+      }
+      const raccolta = clamp01((f - .6) * 3);
+      for (let i = 0; i < 10; i++) {
+        if (raccolta <= 0) break;
+        omino(d, -2 + (i % 5) * 1.6, 2, 4 + Math.floor(i / 5) * 1.6, P.blu, P.pelle, .8);
+        d(-2 + (i % 5) * 1.6, 3.6 + Math.sin(t * 3 + i) * .3, 4 + Math.floor(i / 5) * 1.6, .5, P.tela);
+      }
+      for (let i = 0; i < 8; i++) {                                   // nafta sull'acqua
+        const g = (t * .3 + i * .12) % 1;
+        d(-2 + (i % 4) * 2, 1.5 + livello * 2, -12 + g * 24, 1.1, P.nero);
+      }
+    },
+  };
+},
+
 };
 
 /* ---------------- scene per tipo ---------------- */
@@ -914,7 +1809,16 @@ function disegnaFrame(t) {
      più in basso le costruzioni alte fanno da muro, più in alto si perde il
      senso di plastico. Appena l'utente trascina, il giro automatico si ferma e
      comanda lui. */
-  if (!giro.manuale) { giro.ang = -0.9 + t * 0.12; giro.alt = .61; giro.dist = distAuto(); }
+  if (!giro.manuale) {
+    /* Le scene con un fronte (una parete affrescata, un refettorio) non possono
+       essere girate tutt'intorno: per mezzo giro si vedrebbe il retro del muro.
+       Lì la camera oscilla attorno all'angolo giusto invece di fare il giro. */
+    giro.ang = scenaCorr.fronte != null
+      ? scenaCorr.fronte + Math.sin(t * .17) * .62
+      : -0.9 + t * 0.12;
+    giro.alt = .61;
+    giro.dist = distAuto();
+  }
   const oriz = Math.cos(giro.alt) * giro.dist;
   camera.position.set(Math.cos(giro.ang) * oriz, Math.sin(giro.alt) * giro.dist, Math.sin(giro.ang) * oriz);
   camera.lookAt(0, 3.5, 0);

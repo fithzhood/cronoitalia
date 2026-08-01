@@ -1,6 +1,6 @@
 # CronoItalia — Handoff
 
-**Data:** 1 agosto 2026
+**Data:** 1 agosto 2026 (secondo giro: dataset raddoppiato, scene triplicate)
 **Cartella:** `C:\Users\lfili\OneDrive\Documenti\app\CronoItalia`
 **Stack:** HTML + CSS + JS vanilla, più **three.js r160 vendorizzato** in `vendor/`.
 Nessun build step, nessuna richiesta di rete a runtime.
@@ -36,8 +36,8 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | `cronoitalia.js` | — | Motore: proiezione, camera, carta politica, viaggio, racconto |
 | `cronoitalia-map.js` | 164 KB | **Topologia**: 481 archi, 132 unità, sfondo |
 | `cronoitalia-stati.js` | — | **26 epoche** politiche, dal 800 a.C. a oggi |
-| `cronoitalia-data.js` | — | **238 eventi**, dal 3300 a.C. al 2021, 14 con rotta |
-| `cronoitalia-voxel.js` | — | Motore diorami: 12 scene firma + 7 per tipo |
+| `cronoitalia-data.js` | 123 KB | **498 eventi**, dal 12000 a.C. al 2021, 17 con rotta |
+| `cronoitalia-voxel.js` | — | Motore diorami: **36 scene firma** + 7 per tipo |
 | `vendor/three.min.js` | 654 KB | three.js r160 (l'ultima build UMD, quindi `<script>` normale) |
 
 ### Strumenti (`tools/`, da lanciare con node dalla cartella dell'app)
@@ -45,13 +45,19 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | Comando | A cosa serve |
 |---|---|
 | `node tools/convert-italy-map.js` | Rigenera `cronoitalia-map.js` dai geodati in `data/` |
+| `node tools/merge-eventi.js [--prova]` | Fonde i lotti `tools/new-eventi-*.js` nel dataset, validando prima di scrivere |
 | `node tools/check-stati.js` | Nessuna provincia senza stato, nessuna in due stati |
 | `node tools/check-colori.js` | Nessuna coppia di stati **confinanti** con colori confondibili |
 | `VoxScena.smoke()` in console | Costruisce tutte le scene a più istanti e riporta gli errori |
 
-**Falli girare tutti e tre dopo ogni modifica ai dati o alle scene.** Hanno già
-trovato bug veri: 9 sovrapposizioni di province fra stati, 30 coppie confinanti
-indistinguibili, e il segno sbagliato di un arco in fase di generazione.
+**Falli girare tutti dopo ogni modifica ai dati o alle scene.** Hanno già trovato
+bug veri: 9 sovrapposizioni di province fra stati, 30 coppie confinanti
+indistinguibili, il segno sbagliato di un arco in fase di generazione, tre id
+duplicati e un colore `undefined` da un modulo negativo nella volta della Sistina.
+
+Per aggiungere eventi: scrivi un file `tools/new-eventi-<nome>.js` che esporta un
+array, lancia `node tools/merge-eventi.js --prova`, correggi quel che segnala,
+rilancia senza `--prova` e sposta il lotto in `tools/fusi/`.
 
 ---
 
@@ -98,8 +104,14 @@ Per questo pausa e trascinamento della barra funzionano senza casi particolari,
 esattamente come in Chronoscope.
 
 Differenze rispetto a Chronoscope, volute:
-- **finestra di 200 anni** (non 100): con 238 eventi su cinquemila anni, un
-  secolo solo lasciava troppe finestre vuote;
+- **il cursore degli anni non è lineare** (`annoDaSlider`/`sliderDaAnno`, curva
+  2.6). Su quattordicimila anni una scala uniforme schiaccerebbe in un
+  quindicesimo di corsa gli ultimi mille, dove sta il grosso degli eventi: così
+  invece la metà destra del cursore copre dal 300 a.C. a oggi;
+- **la finestra del racconto si adatta all'epoca** (`ampiezzaFinestra`): due
+  secoli dal Mille in poi, tre secoli nell'antichità, fino a duemila anni nel
+  Neolitico, dove fra un evento e l'altro passano millenni. La velocità cresce
+  insieme, così una corsa dura sempre una venticinquina di secondi;
 - **il racconto parte sempre**, anche dove non è successo niente di registrato,
   perché i confini che si muovono sono già uno spettacolo. I suggerimenti
   "Qui la storia tace" compaiono a lato senza bloccare nulla.
@@ -121,9 +133,12 @@ Due sole mesh, per reggere sul telefono:
 Niente `instanceColor`: raggruppare per colore evita di dipendere da come le
 varie build di three gestiscono i colori per istanza.
 
-**Scene firma già fatte (12):** pompei, colosseo, roma-fondazione, cupola,
-venezia-origini, mille, porta-pia, vajont, marconi, messina-1908, annibale,
-autosole.
+**Scene firma (36):** otzi, nuraghi, canne, appia, annibale, colosseo,
+roma-fondazione, pompei, alarico, ravenna-mosaici, benedetto, palermo-emirato,
+legnano, castel-del-monte, meloria, venezia-origini, cupola, cenacolo, colombo,
+sistina, sacco-roma, lepanto, galileo-cannocchiale, reggia-caserta, volta,
+cinque-giornate, mille, teano, porta-pia, marconi, messina-1908, caporetto,
+liberazione, alluvione-firenze, vajont, autosole.
 **Scene per tipo (7):** battaglia, guerra, viaggio, fondazione, scoperta,
 disastro, cultura.
 
@@ -139,6 +154,21 @@ disastro, cultura.
 - L'inquadratura automatica (`distAuto`) usa **un raggio diverso** nella scheda e
   a tutto schermo: nella finestrella si sta un po' stretti e va bene, a tutto
   schermo il plastico dev'essere tutto dentro, angoli compresi.
+- **Le scene con un fronte vogliono `fronte: Math.PI / 2`.** La camera fa il giro
+  completo: un refettorio o una parete affrescata, senza quel flag, per mezzo
+  giro mostrano il retro del muro. Con il flag la camera oscilla davanti invece
+  di girare. Vale per cenacolo, sistina, ravenna-mosaici, volta.
+- **Niente scatole chiuse** (`m.guscio` a quattro pareti) se dentro c'è qualcosa
+  da vedere: tre pareti e il davanti aperto.
+- **Niente rumore per cella nell'altezza del terreno.** `suolo` usa una funzione
+  liscia: con il rumore due celle vicine potevano differire di due blocchi e nel
+  gradino si vedeva il vuoto sotto la piastra.
+- **Attenzione al modulo negativo.** `colori[(z + a) % n]` con z che parte da -8
+  dà `undefined`: in JavaScript il resto di un negativo è negativo. Lo smoke test
+  lo prende, ma conviene scrivere subito `((i % n) + n) % n`.
+- **Le curve a blocchi da questa camera diventano masse grumose**: un catino
+  absidale costruito arrotondando seni e coseni si legge peggio di una parete
+  piana. Meglio le forme squadrate, che è poi lo spirito del voxel.
 
 ### Aggiungere una scena firma
 
@@ -173,11 +203,12 @@ rigenerare la geometria.
 
 ## Cosa manca / si può fare
 
-- **Altre scene firma.** Ce ne sono 12 su 238 eventi; le più desiderate:
-  cenacolo, sistina, lepanto, caporetto, liberazione, capaci, alluvione-firenze,
-  duomo-milano, cupola già c'è, peste-nera (sobria), codogno (sobria).
-- **Più eventi.** 238 è una base solida ma il Sud e le isole possono crescere,
-  e il Novecento culturale (cinema, musica, design) è appena accennato.
+- **Altre scene firma.** Ce ne sono 36 su 498 eventi; le prossime papabili:
+  duomo-milano, montaperti, vespri, peste-nera (sobria), masaniello,
+  terremoto-1693, scala, mundial, capaci (sobria), codogno (sobria).
+- **Più eventi.** 498 coprono bene la penisola, ma il Sud interno e le isole
+  possono ancora crescere, e il Novecento del design e della musica leggera è
+  appena accennato.
 - **Epoche intermedie.** Fra il 1130 e il 1250 c'è un salto; si potrebbe
   aggiungere il 1176 (Legnano) e il 1210.
 - **Etichette dei nomi degli stati sulla mappa**, oltre alla legenda.
