@@ -40,7 +40,11 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | `cronoitalia-voxel.js` | — | Motore diorami + kit di elementi riusabili + 36 scene firma |
 | `cronoitalia-scene.js` | — | 80 scene firma: preistoria, antichità, medioevo, Rinascimento |
 | `cronoitalia-scene2.js` | — | 50 scene firma: dal Cinquecento a oggi |
-| `cronoitalia-scene3.js` | — | 86 scene firma: il riempimento fino a metà degli eventi |
+| `cronoitalia-scene3.js` | — | 86 scene firma: fino a metà degli eventi |
+| `cronoitalia-scene4.js` | — | 62 scene firma: battaglie e guerre |
+| `cronoitalia-scene5.js` | — | 58 scene firma: fondazioni, scoperte, viaggi |
+| `cronoitalia-scene6.js` | — | 70 scene firma: cultura, politica, costume |
+| `cronoitalia-scene7.js` | — | 56 scene firma: la Repubblica e i disastri |
 | `vendor/three.min.js` | 654 KB | three.js r160 (l'ultima build UMD, quindi `<script>` normale) |
 
 ### Strumenti (`tools/`, da lanciare con node dalla cartella dell'app)
@@ -146,7 +150,7 @@ Due sole mesh, per reggere sul telefono:
 Niente `instanceColor`: raggruppare per colore evita di dipendere da come le
 varie build di three gestiscono i colori per istanza.
 
-**252 scene su misura su 498 eventi: una su due.** Le altre usano la scena per
+**498 scene su misura su 498 eventi: una per ciascuno.** Le altre usano la scena per
 tipo, variata dal generatore seminato sull'id. Le scene stanno in tre file:
 le prime 36 nel motore, le altre in `cronoitalia-scene*.js`. `check-scene.js`
 li trova da solo con un glob, quindi aggiungere un volume non richiede di
@@ -157,9 +161,22 @@ e attingono a `VoxScena.kit`, la libreria di elementi riusabili: `tempio`,
 rendere possibile una scena in dieci righe invece che in trenta.
 
 **Scene per tipo (7):** battaglia, guerra, viaggio, fondazione, scoperta,
-disastro, cultura. Sono la rete di sicurezza: qualunque evento senza scena
-propria ne riceve una comunque, diversa dalle altre dello stesso tipo perché il
-generatore pseudocasuale è seminato sull'id.
+disastro, cultura. Ora nessun evento le usa più, ma restano: sono la rete di
+sicurezza per quelli che aggiungerai, e il controllo dice quanti sono.
+
+### Il kit
+
+`VoxScena.kit` contiene sia i pezzi (`tempio`, `cattedrale`, `torre`, `mura`,
+`nave`, `folla`, `fuoco`, `bandiera`, `stelle`, `onde`, `fabbrica`, `ponte`,
+`casa`, `albero`, `omino`) sia le **scenografie** (`interno`, `piazza`, `campo`,
+`porto`, `teatro`, `bottega`, `collina`, `valle`). Le seconde sono quelle che
+hanno reso possibile arrivare a 498: metà delle scene aveva la stessa
+impalcatura ricopiata, e ricopiata sbagliava ogni volta in modo diverso.
+
+Attenzione: gli elementi che costruiscono blocchi fermi (`casa`, `albero`,
+`tempio`, `interno`…) vanno chiamati **solo dentro `statici`**, dove esiste il
+Mondo su cui posare i cubi. Chiamarli in `dinamici` dà `m.p is not a function` —
+lo smoke test lo prende, ma è un errore facile da fare copiando.
 
 ### Regole imparate costruendo le scene
 
@@ -222,10 +239,13 @@ rigenerare la geometria.
 
 ## Cosa manca / si può fare
 
-- **Altre scene firma.** Sono 252 su 498, cioè il 50,6%: il margine sopra la
-  metà è di tre scene, e ogni evento aggiunto al dataset lo consuma. Fra gli
-  scoperti più desiderabili restano: mundial, dolce-vita, olimpiadi-roma,
-  internet-italia, basaglia, cinquecento, portella, bologna-1980, irpinia.
+- **Le scene ci sono tutte.** Ogni evento nuovo che aggiungi al dataset parte
+  però senza: `check-scene.js` te lo dice, e la scena per tipo lo copre finché
+  non gliene scrivi una.
+- **Rileggere a occhio le scene meno viste.** Sono 498 e ne ho aperte una
+  cinquantina: lo smoke test garantisce che costruiscano e stiano nei limiti,
+  non che si capiscano. Se una risulta illeggibile, quasi sempre è per una delle
+  regole qui sotto.
 - **Più eventi.** 498 coprono bene la penisola, ma il Sud interno e le isole
   possono ancora crescere, e il Novecento del design e della musica leggera è
   appena accennato.

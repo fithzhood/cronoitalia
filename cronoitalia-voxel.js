@@ -38,7 +38,7 @@ const P = {
   divisa: 0x6b7358, oliva: 0x7f8f42, grigioblu: 0x6c8296, grigioverde: 0x7d9188,
   porpora: 0x8e3f68, sangue: 0x8c2f2a, ruggine: 0xa8552f, ottone: 0xc2a24a,
   marrone: 0x96674a, senape: 0xb9a13e, corallo: 0xd9836a, menta: 0x6fbfa3,
-  ocra: 0xc9a227, indaco: 0x6b5bb0,
+  ocra: 0xc9a227, indaco: 0x6b5bb0, magenta: 0xb8558e, lavanda: 0x9a92c4,
   verdeIt: 0x3f9e5e, biancoIt: 0xf0f0ee, rossoIt: 0xc23b2f,
 };
 
@@ -253,6 +253,88 @@ function fabbrica(m, x0, z0, w, d, h, cMuro, ciminiere) {
 function ponte(m, x0, z, lung, h, c) {
   for (let x = x0; x < x0 + lung; x++) m.p(x, h, z, c);
   for (let x = x0; x < x0 + lung; x += 3) for (let y = 1; y < h; y++) m.p(x, y, z, c);
+}
+
+/* ---------------- scenografie ricorrenti ----------------
+ *
+ * Metà delle scene ha bisogno di uno di questi palcoscenici. Averli qui evita
+ * di ricopiare ogni volta trenta righe di pareti e travi, e soprattutto evita
+ * che ogni copia sbagli in modo diverso. */
+
+/* Stanza aperta davanti: parete di fondo, due laterali, travi a soffitto.
+   Va sempre accompagnata da `fronte: Math.PI / 2` nella scena, altrimenti la
+   camera per mezzo giro mostra il retro del muro. */
+function interno(m, larg, alt, prof, cMuro, cSoffitto, cSuolo) {
+  const hx = Math.floor(larg / 2), zf = -Math.floor(prof / 2) - 2, zd = zf + prof;
+  suolo(m, Math.max(hx, 9) + 1, cSuolo || P.pietraChiara, P.pietra, Math.random);
+  for (let x = -hx; x <= hx; x++) for (let y = 1; y <= alt; y++) m.p(x, y, zf, cMuro);
+  for (let z = zf; z <= zd; z++) for (let y = 1; y <= alt; y++) {
+    m.p(-hx, y, z, cMuro); m.p(hx, y, z, cMuro);
+  }
+  for (let x = -hx; x <= hx; x += 2) for (let z = zf; z <= zd; z += 2)
+    m.p(x, alt + 1, z, cSoffitto || P.legno);
+  return { hx, zf, zd };
+}
+
+/* Piazza lastricata con edifici staccati tutt'intorno: se si chiude l'anello
+   la piazza sparisce e resta una massa di mattoni. */
+function piazza(m, R, rng, cMuro, cTetto, alt) {
+  suolo(m, R, P.pietraChiara, P.terra, rng);
+  const posti = [];
+  for (let k = 0; k < 6; k++) { posti.push([-R + 1 + k * 3, -R + 1]); posti.push([-R + 1 + k * 3, R - 4]); }
+  for (let k = 0; k < 3; k++) { posti.push([-R + 1, -R + 5 + k * 4]); posti.push([R - 4, -R + 5 + k * 4]); }
+  for (let i = 0; i < posti.length; i++)
+    casa(m, posti[i][0], posti[i][1], 3, 3, (alt || 3) + (i % 3), i % 2 ? cMuro : P.tela, cTetto || P.tetto, 1);
+  return posti;
+}
+
+/* Campo aperto con alberi ai margini: lo sfondo di quasi tutte le battaglie. */
+function campo(m, R, rng, rilievo, cErba) {
+  suolo(m, R, cErba || P.erbaScura, P.terra, rng, rilievo || 0);
+  for (let i = 0; i < 4; i++) albero(m, -R + 1, -R + 3 + i * 6, 1, rng);
+  for (let i = 0; i < 3; i++) albero(m, R - 1, -R + 5 + i * 7, 1, rng);
+}
+
+/* Costa con banchina: mare fino a `zRiva`, poi terra e molo. */
+function porto(m, zRiva, rng, cTerra) {
+  for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) m.p(x, 0, z, P.mare);
+  for (let x = -12; x <= 12; x++) for (let z = zRiva; z <= 12; z++) {
+    m.p(x, 1, z, cTerra || P.pietraChiara);
+    m.p(x, 0, z, P.terra);
+  }
+  for (let x = -10; x <= 10; x++) m.p(x, 1, zRiva, P.pietra);
+}
+
+/* Sala teatrale: palco in fondo, ordini di palchi ai lati, platea davanti. */
+function teatro(m) {
+  interno(m, 19, 10, 11, P.cotto, P.legno, P.legno);
+  for (let x = -8; x <= 8; x++) for (let y = 1; y <= 5; y++) m.p(x, y, -7, P.rosso);
+  m.box(-8, 1, -6, 17, 1, 3, P.legno);
+}
+
+/* Bottega o studio: banco da lavoro, scaffale, pareti chiare. */
+function bottega(m, cMuro) {
+  interno(m, 17, 7, 10, cMuro || P.tela, P.tronco, P.legno);
+  m.box(-3, 1, -2, 7, 1, 3, P.legno);
+  for (let i = 0; i < 4; i++) m.p(-7, 2 + i, -6, P.legno);
+}
+
+/* Rilievo a cupola: colline, acropoli, alture di battaglia. */
+function collina(m, R, alt, cCima, cBase) {
+  for (let x = -R; x <= R; x++) for (let z = -R; z <= R; z++) {
+    const h = Math.max(0, Math.round(alt - Math.hypot(x, z) * (alt / R)));
+    m.p(x, h, z, h > alt * .6 ? (cCima || P.roccia) : (cBase || P.erbaScura));
+    for (let y = 0; y < h; y++) m.p(x, y, z, P.terra);
+  }
+}
+
+/* Valle stretta fra due versanti, con il fondo percorribile. */
+function valle(m, R, largo, altezza, cCima, cFondo) {
+  for (let x = -R; x <= R; x++) for (let z = -R; z <= R; z++) {
+    const h = Math.min(altezza, Math.round(Math.max(0, (Math.abs(x) - largo) * 1.1)));
+    m.p(x, h, z, h > altezza * .7 ? (cCima || P.neve) : h > 0 ? P.roccia : (cFondo || P.terraScura));
+    for (let y = 0; y < h; y++) m.p(x, y, z, P.roccia);
+  }
 }
 
 /* ---------------- scene firma ---------------- */
@@ -2128,6 +2210,7 @@ const kit = {
   Mondo, suolo, suoloParziale, albero, casa, omino, clamp01,
   tempio, cattedrale, torre, mura, nave, folla, fuoco, bandiera, stelle, onde,
   fabbrica, ponte,
+  interno, piazza, campo, porto, teatro, bottega, collina, valle,
 };
 
 return { play, stop, smoke, ridimensiona, registra, P, kit, FIRMA, TIPO };
