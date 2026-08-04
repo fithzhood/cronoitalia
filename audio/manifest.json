@@ -1,0 +1,2502 @@
+{
+ "grotta-addaura": {
+  "file": "grotta-addaura.mp3",
+  "durata": 12.4,
+  "byte": 50061
+ },
+ "valcamonica": {
+  "file": "valcamonica.mp3",
+  "durata": 12.38,
+  "byte": 49965
+ },
+ "lago-bracciano": {
+  "file": "lago-bracciano.mp3",
+  "durata": 12.1,
+  "byte": 48909
+ },
+ "otzi": {
+  "file": "otzi.mp3",
+  "durata": 14.47,
+  "byte": 58413
+ },
+ "remedello": {
+  "file": "remedello.mp3",
+  "durata": 9.65,
+  "byte": 39117
+ },
+ "polada": {
+  "file": "polada.mp3",
+  "durata": 10.97,
+  "byte": 44397
+ },
+ "nuraghi": {
+  "file": "nuraghi.mp3",
+  "durata": 11.05,
+  "byte": 44685
+ },
+ "terramare": {
+  "file": "terramare.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "frattesina": {
+  "file": "frattesina.mp3",
+  "durata": 11.3,
+  "byte": 45645
+ },
+ "protovillanoviano": {
+  "file": "protovillanoviano.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "latium-vetus": {
+  "file": "latium-vetus.mp3",
+  "durata": 9.68,
+  "byte": 39213
+ },
+ "villanoviani": {
+  "file": "villanoviani.mp3",
+  "durata": 9.82,
+  "byte": 39789
+ },
+ "pithecusa": {
+  "file": "pithecusa.mp3",
+  "durata": 12.38,
+  "byte": 49965
+ },
+ "roma-fondazione": {
+  "file": "roma-fondazione.mp3",
+  "durata": 11.3,
+  "byte": 45645
+ },
+ "cuma": {
+  "file": "cuma.mp3",
+  "durata": 11.15,
+  "byte": 45069
+ },
+ "siracusa": {
+  "file": "siracusa.mp3",
+  "durata": 9.55,
+  "byte": 38637
+ },
+ "messina-zancle": {
+  "file": "messina-zancle.mp3",
+  "durata": 10.18,
+  "byte": 41133
+ },
+ "catania-katane": {
+  "file": "catania-katane.mp3",
+  "durata": 12.05,
+  "byte": 48717
+ },
+ "sibari": {
+  "file": "sibari.mp3",
+  "durata": 10.4,
+  "byte": 42093
+ },
+ "crotone": {
+  "file": "crotone.mp3",
+  "durata": 7.0,
+  "byte": 28461
+ },
+ "taranto": {
+  "file": "taranto.mp3",
+  "durata": 9.97,
+  "byte": 40365
+ },
+ "gela": {
+  "file": "gela.mp3",
+  "durata": 9.07,
+  "byte": 36813
+ },
+ "locri": {
+  "file": "locri.mp3",
+  "durata": 8.3,
+  "byte": 33645
+ },
+ "tarquinia": {
+  "file": "tarquinia.mp3",
+  "durata": 10.53,
+  "byte": 42573
+ },
+ "selinunte": {
+  "file": "selinunte.mp3",
+  "durata": 10.38,
+  "byte": 41997
+ },
+ "cerveteri": {
+  "file": "cerveteri.mp3",
+  "durata": 12.53,
+  "byte": 50541
+ },
+ "cloaca": {
+  "file": "cloaca.mp3",
+  "durata": 10.07,
+  "byte": 40749
+ },
+ "paestum": {
+  "file": "paestum.mp3",
+  "durata": 9.82,
+  "byte": 39789
+ },
+ "agrigento": {
+  "file": "agrigento.mp3",
+  "durata": 8.43,
+  "byte": 34221
+ },
+ "chiusi": {
+  "file": "chiusi.mp3",
+  "durata": 8.93,
+  "byte": 36141
+ },
+ "alalia": {
+  "file": "alalia.mp3",
+  "durata": 11.32,
+  "byte": 45741
+ },
+ "pitagora": {
+  "file": "pitagora.mp3",
+  "durata": 10.88,
+  "byte": 44013
+ },
+ "apollo-veio": {
+  "file": "apollo-veio.mp3",
+  "durata": 10.43,
+  "byte": 42189
+ },
+ "repubblica": {
+  "file": "repubblica.mp3",
+  "durata": 10.6,
+  "byte": 42861
+ },
+ "kainua": {
+  "file": "kainua.mp3",
+  "durata": 10.43,
+  "byte": 42189
+ },
+ "secessione": {
+  "file": "secessione.mp3",
+  "durata": 11.28,
+  "byte": 45549
+ },
+ "himera": {
+  "file": "himera.mp3",
+  "durata": 9.57,
+  "byte": 38733
+ },
+ "cuma-480": {
+  "file": "cuma-480.mp3",
+  "durata": 9.55,
+  "byte": 38637
+ },
+ "dodici-tavole": {
+  "file": "dodici-tavole.mp3",
+  "durata": 10.18,
+  "byte": 41133
+ },
+ "riace": {
+  "file": "riace.mp3",
+  "durata": 12.25,
+  "byte": 49485
+ },
+ "segesta": {
+  "file": "segesta.mp3",
+  "durata": 11.6,
+  "byte": 46893
+ },
+ "siracusa-atene": {
+  "file": "siracusa-atene.mp3",
+  "durata": 12.38,
+  "byte": 49965
+ },
+ "dionisio": {
+  "file": "dionisio.mp3",
+  "durata": 10.82,
+  "byte": 43821
+ },
+ "veio": {
+  "file": "veio.mp3",
+  "durata": 9.95,
+  "byte": 40269
+ },
+ "allia": {
+  "file": "allia.mp3",
+  "durata": 10.65,
+  "byte": 43053
+ },
+ "caudine": {
+  "file": "caudine.mp3",
+  "durata": 10.62,
+  "byte": 42957
+ },
+ "appia": {
+  "file": "appia.mp3",
+  "durata": 11.0,
+  "byte": 44493
+ },
+ "appio-acquedotto": {
+  "file": "appio-acquedotto.mp3",
+  "durata": 8.4,
+  "byte": 34029
+ },
+ "sentino": {
+  "file": "sentino.mp3",
+  "durata": 10.72,
+  "byte": 43341
+ },
+ "eraclea": {
+  "file": "eraclea.mp3",
+  "durata": 8.93,
+  "byte": 36141
+ },
+ "benevento-275": {
+  "file": "benevento-275.mp3",
+  "durata": 8.93,
+  "byte": 36141
+ },
+ "prima-punica": {
+  "file": "prima-punica.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "corvo": {
+  "file": "corvo.mp3",
+  "durata": 13.22,
+  "byte": 53421
+ },
+ "regolo": {
+  "file": "regolo.mp3",
+  "durata": 10.8,
+  "byte": 43629
+ },
+ "egadi": {
+  "file": "egadi.mp3",
+  "durata": 8.47,
+  "byte": 34413
+ },
+ "annibale": {
+  "file": "annibale.mp3",
+  "durata": 11.05,
+  "byte": 44685
+ },
+ "trebbia": {
+  "file": "trebbia.mp3",
+  "durata": 9.1,
+  "byte": 36909
+ },
+ "trasimeno": {
+  "file": "trasimeno.mp3",
+  "durata": 10.18,
+  "byte": 41133
+ },
+ "canne": {
+  "file": "canne.mp3",
+  "durata": 9.88,
+  "byte": 39981
+ },
+ "archimede": {
+  "file": "archimede.mp3",
+  "durata": 9.95,
+  "byte": 40269
+ },
+ "metauro": {
+  "file": "metauro.mp3",
+  "durata": 10.93,
+  "byte": 44205
+ },
+ "cinocefale": {
+  "file": "cinocefale.mp3",
+  "durata": 10.9,
+  "byte": 44109
+ },
+ "cisalpina": {
+  "file": "cisalpina.mp3",
+  "durata": 11.1,
+  "byte": 44877
+ },
+ "via-emilia": {
+  "file": "via-emilia.mp3",
+  "durata": 10.25,
+  "byte": 41517
+ },
+ "baccanali": {
+  "file": "baccanali.mp3",
+  "durata": 12.12,
+  "byte": 49005
+ },
+ "catone": {
+  "file": "catone.mp3",
+  "durata": 10.22,
+  "byte": 41421
+ },
+ "aquileia": {
+  "file": "aquileia.mp3",
+  "durata": 8.72,
+  "byte": 35373
+ },
+ "terenzio": {
+  "file": "terenzio.mp3",
+  "durata": 12.03,
+  "byte": 48621
+ },
+ "gracchi": {
+  "file": "gracchi.mp3",
+  "durata": 12.25,
+  "byte": 49485
+ },
+ "mario": {
+  "file": "mario.mp3",
+  "durata": 11.75,
+  "byte": 47469
+ },
+ "guerra-sociale": {
+  "file": "guerra-sociale.mp3",
+  "durata": 12.07,
+  "byte": 48813
+ },
+ "silla": {
+  "file": "silla.mp3",
+  "durata": 9.75,
+  "byte": 39501
+ },
+ "spartaco": {
+  "file": "spartaco.mp3",
+  "durata": 11.43,
+  "byte": 46221
+ },
+ "cicerone": {
+  "file": "cicerone.mp3",
+  "durata": 11.5,
+  "byte": 46509
+ },
+ "catullo": {
+  "file": "catullo.mp3",
+  "durata": 10.57,
+  "byte": 42765
+ },
+ "lucrezio": {
+  "file": "lucrezio.mp3",
+  "durata": 9.47,
+  "byte": 38349
+ },
+ "rubicone": {
+  "file": "rubicone.mp3",
+  "durata": 9.75,
+  "byte": 39501
+ },
+ "farsalo": {
+  "file": "farsalo.mp3",
+  "durata": 10.97,
+  "byte": 44397
+ },
+ "cesare-calendario": {
+  "file": "cesare-calendario.mp3",
+  "durata": 12.2,
+  "byte": 49293
+ },
+ "cesare-idi": {
+  "file": "cesare-idi.mp3",
+  "durata": 8.55,
+  "byte": 34701
+ },
+ "virgilio": {
+  "file": "virgilio.mp3",
+  "durata": 11.75,
+  "byte": 47469
+ },
+ "augusto": {
+  "file": "augusto.mp3",
+  "durata": 11.65,
+  "byte": 47085
+ },
+ "orazio": {
+  "file": "orazio.mp3",
+  "durata": 8.53,
+  "byte": 34605
+ },
+ "ara-pacis": {
+  "file": "ara-pacis.mp3",
+  "durata": 8.6,
+  "byte": 34893
+ },
+ "regiones": {
+  "file": "regiones.mp3",
+  "durata": 11.47,
+  "byte": 46413
+ },
+ "tiberio-capri": {
+  "file": "tiberio-capri.mp3",
+  "durata": 9.05,
+  "byte": 36717
+ },
+ "claudio-porto": {
+  "file": "claudio-porto.mp3",
+  "durata": 10.6,
+  "byte": 42861
+ },
+ "incendio-roma": {
+  "file": "incendio-roma.mp3",
+  "durata": 12.12,
+  "byte": 49005
+ },
+ "nerone-domus": {
+  "file": "nerone-domus.mp3",
+  "durata": 10.4,
+  "byte": 42093
+ },
+ "vespasiano": {
+  "file": "vespasiano.mp3",
+  "durata": 11.65,
+  "byte": 47085
+ },
+ "pompei": {
+  "file": "pompei.mp3",
+  "durata": 12.07,
+  "byte": 48813
+ },
+ "colosseo": {
+  "file": "colosseo.mp3",
+  "durata": 10.15,
+  "byte": 41037
+ },
+ "traiano": {
+  "file": "traiano.mp3",
+  "durata": 10.12,
+  "byte": 40941
+ },
+ "villa-adriana": {
+  "file": "villa-adriana.mp3",
+  "durata": 9.97,
+  "byte": 40365
+ },
+ "pantheon": {
+  "file": "pantheon.mp3",
+  "durata": 11.35,
+  "byte": 45837
+ },
+ "ostia": {
+  "file": "ostia.mp3",
+  "durata": 9.9,
+  "byte": 40077
+ },
+ "marco-aurelio": {
+  "file": "marco-aurelio.mp3",
+  "durata": 9.88,
+  "byte": 39981
+ },
+ "terme-caracalla": {
+  "file": "terme-caracalla.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "aureliane": {
+  "file": "aureliane.mp3",
+  "durata": 10.1,
+  "byte": 40845
+ },
+ "diocleziano": {
+  "file": "diocleziano.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "milvio": {
+  "file": "milvio.mp3",
+  "durata": 9.95,
+  "byte": 40269
+ },
+ "editto-milano": {
+  "file": "editto-milano.mp3",
+  "durata": 10.3,
+  "byte": 41709
+ },
+ "costantino-arco": {
+  "file": "costantino-arco.mp3",
+  "durata": 9.75,
+  "byte": 39501
+ },
+ "piazza-armerina": {
+  "file": "piazza-armerina.mp3",
+  "durata": 11.03,
+  "byte": 44589
+ },
+ "giuliano": {
+  "file": "giuliano.mp3",
+  "durata": 12.3,
+  "byte": 49677
+ },
+ "altare-vittoria": {
+  "file": "altare-vittoria.mp3",
+  "durata": 12.2,
+  "byte": 49293
+ },
+ "ambrogio": {
+  "file": "ambrogio.mp3",
+  "durata": 10.75,
+  "byte": 43437
+ },
+ "stilicone": {
+  "file": "stilicone.mp3",
+  "durata": 11.32,
+  "byte": 45741
+ },
+ "alarico": {
+  "file": "alarico.mp3",
+  "durata": 13.43,
+  "byte": 54189
+ },
+ "ravenna-mosaici": {
+  "file": "ravenna-mosaici.mp3",
+  "durata": 9.9,
+  "byte": 40077
+ },
+ "attila": {
+  "file": "attila.mp3",
+  "durata": 9.68,
+  "byte": 39213
+ },
+ "leone-attila": {
+  "file": "leone-attila.mp3",
+  "durata": 11.68,
+  "byte": 47181
+ },
+ "genserico": {
+  "file": "genserico.mp3",
+  "durata": 9.7,
+  "byte": 39309
+ },
+ "odoacre": {
+  "file": "odoacre.mp3",
+  "durata": 12.95,
+  "byte": 52269
+ },
+ "teodorico": {
+  "file": "teodorico.mp3",
+  "durata": 11.45,
+  "byte": 46317
+ },
+ "boezio": {
+  "file": "boezio.mp3",
+  "durata": 10.57,
+  "byte": 42765
+ },
+ "benedetto": {
+  "file": "benedetto.mp3",
+  "durata": 10.18,
+  "byte": 41133
+ },
+ "guerra-gotica": {
+  "file": "guerra-gotica.mp3",
+  "durata": 9.45,
+  "byte": 38253
+ },
+ "peste-giustiniano": {
+  "file": "peste-giustiniano.mp3",
+  "durata": 9.95,
+  "byte": 40269
+ },
+ "san-vitale": {
+  "file": "san-vitale.mp3",
+  "durata": 11.75,
+  "byte": 47469
+ },
+ "tagina": {
+  "file": "tagina.mp3",
+  "durata": 9.53,
+  "byte": 38541
+ },
+ "cassiodoro": {
+  "file": "cassiodoro.mp3",
+  "durata": 12.1,
+  "byte": 48909
+ },
+ "longobardi": {
+  "file": "longobardi.mp3",
+  "durata": 11.47,
+  "byte": 46413
+ },
+ "gregorio": {
+  "file": "gregorio.mp3",
+  "durata": 10.4,
+  "byte": 42093
+ },
+ "teodolinda": {
+  "file": "teodolinda.mp3",
+  "durata": 10.55,
+  "byte": 42669
+ },
+ "bobbio": {
+  "file": "bobbio.mp3",
+  "durata": 8.7,
+  "byte": 35277
+ },
+ "monza-corona": {
+  "file": "monza-corona.mp3",
+  "durata": 11.07,
+  "byte": 44781
+ },
+ "rotari": {
+  "file": "rotari.mp3",
+  "durata": 11.15,
+  "byte": 45069
+ },
+ "grimoaldo": {
+  "file": "grimoaldo.mp3",
+  "durata": 10.9,
+  "byte": 44109
+ },
+ "venezia-origini": {
+  "file": "venezia-origini.mp3",
+  "durata": 9.35,
+  "byte": 37869
+ },
+ "liutprando": {
+  "file": "liutprando.mp3",
+  "durata": 10.47,
+  "byte": 42381
+ },
+ "cividale": {
+  "file": "cividale.mp3",
+  "durata": 10.95,
+  "byte": 44301
+ },
+ "carlo-magno": {
+  "file": "carlo-magno.mp3",
+  "durata": 9.93,
+  "byte": 40173
+ },
+ "paolo-diacono": {
+  "file": "paolo-diacono.mp3",
+  "durata": 11.45,
+  "byte": 46317
+ },
+ "natale-800": {
+  "file": "natale-800.mp3",
+  "durata": 11.47,
+  "byte": 46413
+ },
+ "arabi-mazara": {
+  "file": "arabi-mazara.mp3",
+  "durata": 11.93,
+  "byte": 48141
+ },
+ "san-marco": {
+  "file": "san-marco.mp3",
+  "durata": 12.35,
+  "byte": 49869
+ },
+ "palermo-emirato": {
+  "file": "palermo-emirato.mp3",
+  "durata": 11.07,
+  "byte": 44781
+ },
+ "ludovico-ii": {
+  "file": "ludovico-ii.mp3",
+  "durata": 12.93,
+  "byte": 52173
+ },
+ "amalfi": {
+  "file": "amalfi.mp3",
+  "durata": 12.28,
+  "byte": 49581
+ },
+ "taormina": {
+  "file": "taormina.mp3",
+  "durata": 12.65,
+  "byte": 51117
+ },
+ "garigliano": {
+  "file": "garigliano.mp3",
+  "durata": 11.35,
+  "byte": 45837
+ },
+ "ungari": {
+  "file": "ungari.mp3",
+  "durata": 10.12,
+  "byte": 40941
+ },
+ "ottone": {
+  "file": "ottone.mp3",
+  "durata": 11.93,
+  "byte": 48141
+ },
+ "anno-mille": {
+  "file": "anno-mille.mp3",
+  "durata": 10.25,
+  "byte": 41517
+ },
+ "arduino-ivrea": {
+  "file": "arduino-ivrea.mp3",
+  "durata": 14.6,
+  "byte": 58893
+ },
+ "pisa-genova": {
+  "file": "pisa-genova.mp3",
+  "durata": 10.7,
+  "byte": 43245
+ },
+ "guido-arezzo": {
+  "file": "guido-arezzo.mp3",
+  "durata": 12.28,
+  "byte": 49581
+ },
+ "civitate": {
+  "file": "civitate.mp3",
+  "durata": 10.57,
+  "byte": 42765
+ },
+ "melfi": {
+  "file": "melfi.mp3",
+  "durata": 8.35,
+  "byte": 33837
+ },
+ "salerno-medica": {
+  "file": "salerno-medica.mp3",
+  "durata": 10.85,
+  "byte": 43917
+ },
+ "duomo-pisa": {
+  "file": "duomo-pisa.mp3",
+  "durata": 10.12,
+  "byte": 40941
+ },
+ "palermo-normanna": {
+  "file": "palermo-normanna.mp3",
+  "durata": 10.2,
+  "byte": 41229
+ },
+ "canossa": {
+  "file": "canossa.mp3",
+  "durata": 12.43,
+  "byte": 50157
+ },
+ "venezia-oriente": {
+  "file": "venezia-oriente.mp3",
+  "durata": 12.18,
+  "byte": 49197
+ },
+ "bologna-universita": {
+  "file": "bologna-universita.mp3",
+  "durata": 10.28,
+  "byte": 41613
+ },
+ "crociata": {
+  "file": "crociata.mp3",
+  "durata": 11.65,
+  "byte": 47085
+ },
+ "matilde": {
+  "file": "matilde.mp3",
+  "durata": 10.68,
+  "byte": 43149
+ },
+ "venezia-arsenale": {
+  "file": "venezia-arsenale.mp3",
+  "durata": 10.72,
+  "byte": 43341
+ },
+ "torri-bologna": {
+  "file": "torri-bologna.mp3",
+  "durata": 11.5,
+  "byte": 46509
+ },
+ "ruggero-ii": {
+  "file": "ruggero-ii.mp3",
+  "durata": 10.88,
+  "byte": 44013
+ },
+ "cappella-palatina": {
+  "file": "cappella-palatina.mp3",
+  "durata": 10.75,
+  "byte": 43437
+ },
+ "ruggero-idrisi": {
+  "file": "ruggero-idrisi.mp3",
+  "durata": 12.32,
+  "byte": 49773
+ },
+ "lega-lombarda": {
+  "file": "lega-lombarda.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "legnano": {
+  "file": "legnano.mp3",
+  "durata": 10.93,
+  "byte": 44205
+ },
+ "costanza": {
+  "file": "costanza.mp3",
+  "durata": 10.55,
+  "byte": 42669
+ },
+ "broletto": {
+  "file": "broletto.mp3",
+  "durata": 11.78,
+  "byte": 47565
+ },
+ "san-marco-cavalli": {
+  "file": "san-marco-cavalli.mp3",
+  "durata": 12.28,
+  "byte": 49581
+ },
+ "francesco": {
+  "file": "francesco.mp3",
+  "durata": 10.45,
+  "byte": 42285
+ },
+ "ordini-mendicanti": {
+  "file": "ordini-mendicanti.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "federico-ii": {
+  "file": "federico-ii.mp3",
+  "durata": 12.55,
+  "byte": 50637
+ },
+ "napoli-universita": {
+  "file": "napoli-universita.mp3",
+  "durata": 9.57,
+  "byte": 38733
+ },
+ "scuola-siciliana": {
+  "file": "scuola-siciliana.mp3",
+  "durata": 10.6,
+  "byte": 42861
+ },
+ "federico-melfi": {
+  "file": "federico-melfi.mp3",
+  "durata": 12.5,
+  "byte": 50445
+ },
+ "cortenuova": {
+  "file": "cortenuova.mp3",
+  "durata": 9.95,
+  "byte": 40269
+ },
+ "castel-del-monte": {
+  "file": "castel-del-monte.mp3",
+  "durata": 9.1,
+  "byte": 36909
+ },
+ "lucca-seta": {
+  "file": "lucca-seta.mp3",
+  "durata": 11.6,
+  "byte": 46893
+ },
+ "fiorino": {
+  "file": "fiorino.mp3",
+  "durata": 10.15,
+  "byte": 41037
+ },
+ "assisi-basilica": {
+  "file": "assisi-basilica.mp3",
+  "durata": 10.93,
+  "byte": 44205
+ },
+ "montaperti": {
+  "file": "montaperti.mp3",
+  "durata": 8.88,
+  "byte": 35949
+ },
+ "tommaso": {
+  "file": "tommaso.mp3",
+  "durata": 10.68,
+  "byte": 43149
+ },
+ "benevento-1266": {
+  "file": "benevento-1266.mp3",
+  "durata": 8.68,
+  "byte": 35181
+ },
+ "tagliacozzo": {
+  "file": "tagliacozzo.mp3",
+  "durata": 7.53,
+  "byte": 30573
+ },
+ "marco-polo": {
+  "file": "marco-polo.mp3",
+  "durata": 12.32,
+  "byte": 49773
+ },
+ "vespri": {
+  "file": "vespri.mp3",
+  "durata": 11.43,
+  "byte": 46221
+ },
+ "meloria": {
+  "file": "meloria.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "occhiali": {
+  "file": "occhiali.mp3",
+  "durata": 13.18,
+  "byte": 53133
+ },
+ "salimbene": {
+  "file": "salimbene.mp3",
+  "durata": 10.32,
+  "byte": 41805
+ },
+ "campaldino": {
+  "file": "campaldino.mp3",
+  "durata": 8.0,
+  "byte": 32493
+ },
+ "vetro-murano": {
+  "file": "vetro-murano.mp3",
+  "durata": 11.25,
+  "byte": 45453
+ },
+ "curzola": {
+  "file": "curzola.mp3",
+  "durata": 9.72,
+  "byte": 39405
+ },
+ "marco-polo-milione": {
+  "file": "marco-polo-milione.mp3",
+  "durata": 9.25,
+  "byte": 37485
+ },
+ "amalfi-bussola": {
+  "file": "amalfi-bussola.mp3",
+  "durata": 12.75,
+  "byte": 51501
+ },
+ "banchi": {
+  "file": "banchi.mp3",
+  "durata": 11.82,
+  "byte": 47757
+ },
+ "dante-esilio": {
+  "file": "dante-esilio.mp3",
+  "durata": 9.45,
+  "byte": 38253
+ },
+ "vespro-caltabellotta": {
+  "file": "vespro-caltabellotta.mp3",
+  "durata": 10.47,
+  "byte": 42381
+ },
+ "boniface-anagni": {
+  "file": "boniface-anagni.mp3",
+  "durata": 10.32,
+  "byte": 41805
+ },
+ "scrovegni": {
+  "file": "scrovegni.mp3",
+  "durata": 11.05,
+  "byte": 44685
+ },
+ "avignone": {
+  "file": "avignone.mp3",
+  "durata": 8.95,
+  "byte": 36237
+ },
+ "carestia-1315": {
+  "file": "carestia-1315.mp3",
+  "durata": 11.45,
+  "byte": 46317
+ },
+ "commedia": {
+  "file": "commedia.mp3",
+  "durata": 8.97,
+  "byte": 36333
+ },
+ "cangrande": {
+  "file": "cangrande.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "lorenzetti": {
+  "file": "lorenzetti.mp3",
+  "durata": 13.35,
+  "byte": 53901
+ },
+ "cassa-firenze": {
+  "file": "cassa-firenze.mp3",
+  "durata": 11.88,
+  "byte": 47949
+ },
+ "cola": {
+  "file": "cola.mp3",
+  "durata": 10.6,
+  "byte": 42861
+ },
+ "peste-nera": {
+  "file": "peste-nera.mp3",
+  "durata": 10.1,
+  "byte": 40845
+ },
+ "compagnie-ventura": {
+  "file": "compagnie-ventura.mp3",
+  "durata": 12.15,
+  "byte": 49101
+ },
+ "decameron": {
+  "file": "decameron.mp3",
+  "durata": 10.35,
+  "byte": 41901
+ },
+ "caterina": {
+  "file": "caterina.mp3",
+  "durata": 10.43,
+  "byte": 42189
+ },
+ "ciompi": {
+  "file": "ciompi.mp3",
+  "durata": 9.1,
+  "byte": 36909
+ },
+ "scisma": {
+  "file": "scisma.mp3",
+  "durata": 10.62,
+  "byte": 42957
+ },
+ "chioggia": {
+  "file": "chioggia.mp3",
+  "durata": 10.3,
+  "byte": 41709
+ },
+ "duomo-milano": {
+  "file": "duomo-milano.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "gian-galeazzo": {
+  "file": "gian-galeazzo.mp3",
+  "durata": 12.6,
+  "byte": 50829
+ },
+ "certosa-pavia": {
+  "file": "certosa-pavia.mp3",
+  "durata": 10.78,
+  "byte": 43533
+ },
+ "prospettiva": {
+  "file": "prospettiva.mp3",
+  "durata": 10.82,
+  "byte": 43821
+ },
+ "masaccio": {
+  "file": "masaccio.mp3",
+  "durata": 11.3,
+  "byte": 45645
+ },
+ "venezia-terraferma": {
+  "file": "venezia-terraferma.mp3",
+  "durata": 12.07,
+  "byte": 48813
+ },
+ "medici-banco": {
+  "file": "medici-banco.mp3",
+  "durata": 10.97,
+  "byte": 44397
+ },
+ "cupola": {
+  "file": "cupola.mp3",
+  "durata": 11.95,
+  "byte": 48237
+ },
+ "anghiari": {
+  "file": "anghiari.mp3",
+  "durata": 10.1,
+  "byte": 40845
+ },
+ "donatello": {
+  "file": "donatello.mp3",
+  "durata": 8.57,
+  "byte": 34797
+ },
+ "alberti": {
+  "file": "alberti.mp3",
+  "durata": 11.7,
+  "byte": 47277
+ },
+ "lodi": {
+  "file": "lodi.mp3",
+  "durata": 11.95,
+  "byte": 48237
+ },
+ "piero-francesca": {
+  "file": "piero-francesca.mp3",
+  "durata": 12.15,
+  "byte": 49101
+ },
+ "accademia-platonica": {
+  "file": "accademia-platonica.mp3",
+  "durata": 11.35,
+  "byte": 45837
+ },
+ "stampa-italia": {
+  "file": "stampa-italia.mp3",
+  "durata": 10.25,
+  "byte": 41517
+ },
+ "urbino": {
+  "file": "urbino.mp3",
+  "durata": 11.62,
+  "byte": 46989
+ },
+ "stampa-venezia": {
+  "file": "stampa-venezia.mp3",
+  "durata": 11.8,
+  "byte": 47661
+ },
+ "mantegna": {
+  "file": "mantegna.mp3",
+  "durata": 11.5,
+  "byte": 46509
+ },
+ "pazzi": {
+  "file": "pazzi.mp3",
+  "durata": 9.85,
+  "byte": 39885
+ },
+ "colleoni": {
+  "file": "colleoni.mp3",
+  "durata": 9.68,
+  "byte": 39213
+ },
+ "otranto": {
+  "file": "otranto.mp3",
+  "durata": 9.5,
+  "byte": 38445
+ },
+ "pico": {
+  "file": "pico.mp3",
+  "durata": 11.62,
+  "byte": 46989
+ },
+ "colombo": {
+  "file": "colombo.mp3",
+  "durata": 10.85,
+  "byte": 43917
+ },
+ "leonardo-cavallo": {
+  "file": "leonardo-cavallo.mp3",
+  "durata": 12.2,
+  "byte": 49293
+ },
+ "carlo-viii": {
+  "file": "carlo-viii.mp3",
+  "durata": 12.03,
+  "byte": 48621
+ },
+ "pacioli": {
+  "file": "pacioli.mp3",
+  "durata": 11.18,
+  "byte": 45165
+ },
+ "fornovo": {
+  "file": "fornovo.mp3",
+  "durata": 10.47,
+  "byte": 42381
+ },
+ "cenacolo": {
+  "file": "cenacolo.mp3",
+  "durata": 10.78,
+  "byte": 43533
+ },
+ "savonarola": {
+  "file": "savonarola.mp3",
+  "durata": 8.47,
+  "byte": 34413
+ },
+ "caterina-sforza": {
+  "file": "caterina-sforza.mp3",
+  "durata": 11.15,
+  "byte": 45069
+ },
+ "vespucci": {
+  "file": "vespucci.mp3",
+  "durata": 10.22,
+  "byte": 41421
+ },
+ "david": {
+  "file": "david.mp3",
+  "durata": 10.57,
+  "byte": 42765
+ },
+ "lega-cambrai": {
+  "file": "lega-cambrai.mp3",
+  "durata": 12.18,
+  "byte": 49197
+ },
+ "agnadello": {
+  "file": "agnadello.mp3",
+  "durata": 9.93,
+  "byte": 40173
+ },
+ "raffaello-stanze": {
+  "file": "raffaello-stanze.mp3",
+  "durata": 11.15,
+  "byte": 45069
+ },
+ "ravenna-1512": {
+  "file": "ravenna-1512.mp3",
+  "durata": 10.43,
+  "byte": 42189
+ },
+ "sistina": {
+  "file": "sistina.mp3",
+  "durata": 10.7,
+  "byte": 43245
+ },
+ "machiavelli": {
+  "file": "machiavelli.mp3",
+  "durata": 11.78,
+  "byte": 47565
+ },
+ "marignano": {
+  "file": "marignano.mp3",
+  "durata": 9.45,
+  "byte": 38253
+ },
+ "ariosto": {
+  "file": "ariosto.mp3",
+  "durata": 10.47,
+  "byte": 42381
+ },
+ "tiziano": {
+  "file": "tiziano.mp3",
+  "durata": 11.43,
+  "byte": 46221
+ },
+ "pavia-1525": {
+  "file": "pavia-1525.mp3",
+  "durata": 8.68,
+  "byte": 35181
+ },
+ "sacco-roma": {
+  "file": "sacco-roma.mp3",
+  "durata": 9.47,
+  "byte": 38349
+ },
+ "castiglione": {
+  "file": "castiglione.mp3",
+  "durata": 10.22,
+  "byte": 41421
+ },
+ "doria": {
+  "file": "doria.mp3",
+  "durata": 12.18,
+  "byte": 49197
+ },
+ "carlo-v": {
+  "file": "carlo-v.mp3",
+  "durata": 10.22,
+  "byte": 41421
+ },
+ "malta-ordine": {
+  "file": "malta-ordine.mp3",
+  "durata": 10.47,
+  "byte": 42381
+ },
+ "concilio-trento": {
+  "file": "concilio-trento.mp3",
+  "durata": 11.4,
+  "byte": 46029
+ },
+ "vasari": {
+  "file": "vasari.mp3",
+  "durata": 11.5,
+  "byte": 46509
+ },
+ "cellini": {
+  "file": "cellini.mp3",
+  "durata": 9.5,
+  "byte": 38445
+ },
+ "siena-1555": {
+  "file": "siena-1555.mp3",
+  "durata": 10.65,
+  "byte": 43053
+ },
+ "cateau": {
+  "file": "cateau.mp3",
+  "durata": 11.07,
+  "byte": 44781
+ },
+ "uffizi": {
+  "file": "uffizi.mp3",
+  "durata": 11.72,
+  "byte": 47373
+ },
+ "palestrina": {
+  "file": "palestrina.mp3",
+  "durata": 12.22,
+  "byte": 49389
+ },
+ "palladio": {
+  "file": "palladio.mp3",
+  "durata": 9.7,
+  "byte": 39309
+ },
+ "lepanto": {
+  "file": "lepanto.mp3",
+  "durata": 10.45,
+  "byte": 42285
+ },
+ "veronese-inquisizione": {
+  "file": "veronese-inquisizione.mp3",
+  "durata": 11.7,
+  "byte": 47277
+ },
+ "tasso": {
+  "file": "tasso.mp3",
+  "durata": 11.72,
+  "byte": 47373
+ },
+ "gregoriano": {
+  "file": "gregoriano.mp3",
+  "durata": 11.35,
+  "byte": 45837
+ },
+ "acqua-felice": {
+  "file": "acqua-felice.mp3",
+  "durata": 11.1,
+  "byte": 44877
+ },
+ "bruno": {
+  "file": "bruno.mp3",
+  "durata": 10.07,
+  "byte": 40749
+ },
+ "caravaggio": {
+  "file": "caravaggio.mp3",
+  "durata": 10.53,
+  "byte": 42573
+ },
+ "orfeo": {
+  "file": "orfeo.mp3",
+  "durata": 9.7,
+  "byte": 39309
+ },
+ "galileo-cannocchiale": {
+  "file": "galileo-cannocchiale.mp3",
+  "durata": 11.93,
+  "byte": 48141
+ },
+ "monteverdi-venezia": {
+  "file": "monteverdi-venezia.mp3",
+  "durata": 12.0,
+  "byte": 48429
+ },
+ "peste-1630": {
+  "file": "peste-1630.mp3",
+  "durata": 12.78,
+  "byte": 51597
+ },
+ "vesuvio-1631": {
+  "file": "vesuvio-1631.mp3",
+  "durata": 8.72,
+  "byte": 35373
+ },
+ "bernini-baldacchino": {
+  "file": "bernini-baldacchino.mp3",
+  "durata": 11.32,
+  "byte": 45741
+ },
+ "galileo-processo": {
+  "file": "galileo-processo.mp3",
+  "durata": 8.35,
+  "byte": 33837
+ },
+ "borromini": {
+  "file": "borromini.mp3",
+  "durata": 11.85,
+  "byte": 47853
+ },
+ "torricelli": {
+  "file": "torricelli.mp3",
+  "durata": 9.28,
+  "byte": 37581
+ },
+ "masaniello": {
+  "file": "masaniello.mp3",
+  "durata": 11.05,
+  "byte": 44685
+ },
+ "accademia-cimento": {
+  "file": "accademia-cimento.mp3",
+  "durata": 12.12,
+  "byte": 49005
+ },
+ "barocco-lecce": {
+  "file": "barocco-lecce.mp3",
+  "durata": 10.53,
+  "byte": 42573
+ },
+ "vesuvio-1660": {
+  "file": "vesuvio-1660.mp3",
+  "durata": 11.28,
+  "byte": 45549
+ },
+ "malpighi": {
+  "file": "malpighi.mp3",
+  "durata": 10.85,
+  "byte": 43917
+ },
+ "cassini": {
+  "file": "cassini.mp3",
+  "durata": 12.35,
+  "byte": 49869
+ },
+ "etna-1669": {
+  "file": "etna-1669.mp3",
+  "durata": 13.93,
+  "byte": 56205
+ },
+ "terremoto-1693": {
+  "file": "terremoto-1693.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "stradivari": {
+  "file": "stradivari.mp3",
+  "durata": 10.7,
+  "byte": 43245
+ },
+ "torino-1706": {
+  "file": "torino-1706.mp3",
+  "durata": 10.93,
+  "byte": 44205
+ },
+ "utrecht": {
+  "file": "utrecht.mp3",
+  "durata": 11.1,
+  "byte": 44877
+ },
+ "vico": {
+  "file": "vico.mp3",
+  "durata": 11.72,
+  "byte": 47373
+ },
+ "vivaldi": {
+  "file": "vivaldi.mp3",
+  "durata": 11.75,
+  "byte": 47469
+ },
+ "canaletto": {
+  "file": "canaletto.mp3",
+  "durata": 10.32,
+  "byte": 41805
+ },
+ "bitonto": {
+  "file": "bitonto.mp3",
+  "durata": 9.1,
+  "byte": 36909
+ },
+ "san-carlo": {
+  "file": "san-carlo.mp3",
+  "durata": 10.93,
+  "byte": 44205
+ },
+ "ercolano-scavi": {
+  "file": "ercolano-scavi.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "scarlatti": {
+  "file": "scarlatti.mp3",
+  "durata": 11.22,
+  "byte": 45357
+ },
+ "muratori": {
+  "file": "muratori.mp3",
+  "durata": 12.38,
+  "byte": 49965
+ },
+ "pompei-scavi": {
+  "file": "pompei-scavi.mp3",
+  "durata": 10.18,
+  "byte": 41133
+ },
+ "tiepolo": {
+  "file": "tiepolo.mp3",
+  "durata": 10.88,
+  "byte": 44013
+ },
+ "reggia-caserta": {
+  "file": "reggia-caserta.mp3",
+  "durata": 11.03,
+  "byte": 44589
+ },
+ "goldoni": {
+  "file": "goldoni.mp3",
+  "durata": 10.88,
+  "byte": 44013
+ },
+ "paoli": {
+  "file": "paoli.mp3",
+  "durata": 12.8,
+  "byte": 51693
+ },
+ "catasto-teresiano": {
+  "file": "catasto-teresiano.mp3",
+  "durata": 11.95,
+  "byte": 48237
+ },
+ "grand-tour": {
+  "file": "grand-tour.mp3",
+  "durata": 11.32,
+  "byte": 45741
+ },
+ "beccaria": {
+  "file": "beccaria.mp3",
+  "durata": 10.97,
+  "byte": 44397
+ },
+ "caffe": {
+  "file": "caffe.mp3",
+  "durata": 10.53,
+  "byte": 42573
+ },
+ "winckelmann": {
+  "file": "winckelmann.mp3",
+  "durata": 12.4,
+  "byte": 50061
+ },
+ "spallanzani": {
+  "file": "spallanzani.mp3",
+  "durata": 12.95,
+  "byte": 52269
+ },
+ "soppressione-gesuiti": {
+  "file": "soppressione-gesuiti.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "scala": {
+  "file": "scala.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "gaetano-filangieri": {
+  "file": "gaetano-filangieri.mp3",
+  "durata": 11.88,
+  "byte": 47949
+ },
+ "beccaria-milano": {
+  "file": "beccaria-milano.mp3",
+  "durata": 10.57,
+  "byte": 42765
+ },
+ "leopoldo-pena": {
+  "file": "leopoldo-pena.mp3",
+  "durata": 12.95,
+  "byte": 52269
+ },
+ "galvani": {
+  "file": "galvani.mp3",
+  "durata": 10.65,
+  "byte": 43053
+ },
+ "canova": {
+  "file": "canova.mp3",
+  "durata": 11.65,
+  "byte": 47085
+ },
+ "lodi-1796": {
+  "file": "lodi-1796.mp3",
+  "durata": 9.2,
+  "byte": 37293
+ },
+ "montenotte": {
+  "file": "montenotte.mp3",
+  "durata": 11.2,
+  "byte": 45261
+ },
+ "campoformio": {
+  "file": "campoformio.mp3",
+  "durata": 10.55,
+  "byte": 42669
+ },
+ "cispadana": {
+  "file": "cispadana.mp3",
+  "durata": 10.1,
+  "byte": 40845
+ },
+ "repubblica-anconitana": {
+  "file": "repubblica-anconitana.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "partenopea": {
+  "file": "partenopea.mp3",
+  "durata": 11.05,
+  "byte": 44685
+ },
+ "pisacane-vandee": {
+  "file": "pisacane-vandee.mp3",
+  "durata": 12.72,
+  "byte": 51405
+ },
+ "volta": {
+  "file": "volta.mp3",
+  "durata": 10.3,
+  "byte": 41709
+ },
+ "marengo": {
+  "file": "marengo.mp3",
+  "durata": 9.05,
+  "byte": 36717
+ },
+ "appiani": {
+  "file": "appiani.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "regno-italico": {
+  "file": "regno-italico.mp3",
+  "durata": 11.38,
+  "byte": 45933
+ },
+ "blocco-continentale": {
+  "file": "blocco-continentale.mp3",
+  "durata": 11.0,
+  "byte": 44493
+ },
+ "foscolo": {
+  "file": "foscolo.mp3",
+  "durata": 10.4,
+  "byte": 42093
+ },
+ "leva-napoleonica": {
+  "file": "leva-napoleonica.mp3",
+  "durata": 10.38,
+  "byte": 41997
+ },
+ "murat": {
+  "file": "murat.mp3",
+  "durata": 11.95,
+  "byte": 48237
+ },
+ "restituzioni-canova": {
+  "file": "restituzioni-canova.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "vienna": {
+  "file": "vienna.mp3",
+  "durata": 10.7,
+  "byte": 43245
+ },
+ "rossini": {
+  "file": "rossini.mp3",
+  "durata": 10.2,
+  "byte": 41229
+ },
+ "tambora-italia": {
+  "file": "tambora-italia.mp3",
+  "durata": 10.15,
+  "byte": 41037
+ },
+ "leopardi": {
+  "file": "leopardi.mp3",
+  "durata": 10.5,
+  "byte": 42477
+ },
+ "carboneria": {
+  "file": "carboneria.mp3",
+  "durata": 9.62,
+  "byte": 39021
+ },
+ "moti-1821": {
+  "file": "moti-1821.mp3",
+  "durata": 11.38,
+  "byte": 45933
+ },
+ "promessi-sposi": {
+  "file": "promessi-sposi.mp3",
+  "durata": 10.5,
+  "byte": 42477
+ },
+ "belli": {
+  "file": "belli.mp3",
+  "durata": 11.05,
+  "byte": 44685
+ },
+ "giovine-italia": {
+  "file": "giovine-italia.mp3",
+  "durata": 11.55,
+  "byte": 46701
+ },
+ "moti-1831": {
+  "file": "moti-1831.mp3",
+  "durata": 8.2,
+  "byte": 33261
+ },
+ "ferrovia-1839": {
+  "file": "ferrovia-1839.mp3",
+  "durata": 10.05,
+  "byte": 40653
+ },
+ "nabucco": {
+  "file": "nabucco.mp3",
+  "durata": 10.12,
+  "byte": 40941
+ },
+ "bandiera": {
+  "file": "bandiera.mp3",
+  "durata": 11.15,
+  "byte": 45069
+ },
+ "pio-ix": {
+  "file": "pio-ix.mp3",
+  "durata": 11.32,
+  "byte": 45741
+ },
+ "cinque-giornate": {
+  "file": "cinque-giornate.mp3",
+  "durata": 10.05,
+  "byte": 40653
+ },
+ "custoza-1848": {
+  "file": "custoza-1848.mp3",
+  "durata": 7.35,
+  "byte": 29901
+ },
+ "palermo-1848": {
+  "file": "palermo-1848.mp3",
+  "durata": 10.95,
+  "byte": 44301
+ },
+ "pastrengo": {
+  "file": "pastrengo.mp3",
+  "durata": 9.65,
+  "byte": 39117
+ },
+ "statuto": {
+  "file": "statuto.mp3",
+  "durata": 12.2,
+  "byte": 49293
+ },
+ "venezia-1848": {
+  "file": "venezia-1848.mp3",
+  "durata": 12.2,
+  "byte": 49293
+ },
+ "balilla": {
+  "file": "balilla.mp3",
+  "durata": 11.72,
+  "byte": 47373
+ },
+ "novara": {
+  "file": "novara.mp3",
+  "durata": 9.68,
+  "byte": 39213
+ },
+ "repubblica-romana": {
+  "file": "repubblica-romana.mp3",
+  "durata": 10.4,
+  "byte": 42093
+ },
+ "cavour": {
+  "file": "cavour.mp3",
+  "durata": 11.62,
+  "byte": 46989
+ },
+ "pisacane": {
+  "file": "pisacane.mp3",
+  "durata": 11.6,
+  "byte": 46893
+ },
+ "plombieres": {
+  "file": "plombieres.mp3",
+  "durata": 10.03,
+  "byte": 40557
+ },
+ "magenta": {
+  "file": "magenta.mp3",
+  "durata": 8.9,
+  "byte": 36045
+ },
+ "solferino": {
+  "file": "solferino.mp3",
+  "durata": 10.72,
+  "byte": 43341
+ },
+ "calatafimi": {
+  "file": "calatafimi.mp3",
+  "durata": 9.38,
+  "byte": 37965
+ },
+ "mille": {
+  "file": "mille.mp3",
+  "durata": 10.62,
+  "byte": 42957
+ },
+ "teano": {
+  "file": "teano.mp3",
+  "durata": 9.15,
+  "byte": 37101
+ },
+ "volturno": {
+  "file": "volturno.mp3",
+  "durata": 7.5,
+  "byte": 30477
+ },
+ "brigantaggio": {
+  "file": "brigantaggio.mp3",
+  "durata": 10.65,
+  "byte": 43053
+ },
+ "regno-italia": {
+  "file": "regno-italia.mp3",
+  "durata": 12.43,
+  "byte": 50157
+ },
+ "aspromonte": {
+  "file": "aspromonte.mp3",
+  "durata": 12.05,
+  "byte": 48717
+ },
+ "custoza-1866": {
+  "file": "custoza-1866.mp3",
+  "durata": 10.32,
+  "byte": 41805
+ },
+ "lissa": {
+  "file": "lissa.mp3",
+  "durata": 9.78,
+  "byte": 39597
+ },
+ "mentana": {
+  "file": "mentana.mp3",
+  "durata": 9.68,
+  "byte": 39213
+ },
+ "tasse-macinato": {
+  "file": "tasse-macinato.mp3",
+  "durata": 11.18,
+  "byte": 45165
+ },
+ "suez-italia": {
+  "file": "suez-italia.mp3",
+  "durata": 13.35,
+  "byte": 53901
+ },
+ "porta-pia": {
+  "file": "porta-pia.mp3",
+  "durata": 11.43,
+  "byte": 46221
+ },
+ "roma-capitale": {
+  "file": "roma-capitale.mp3",
+  "durata": 10.7,
+  "byte": 43245
+ },
+ "traforo": {
+  "file": "traforo.mp3",
+  "durata": 10.82,
+  "byte": 43821
+ },
+ "legge-coppino": {
+  "file": "legge-coppino.mp3",
+  "durata": 13.12,
+  "byte": 52941
+ },
+ "emigrazione": {
+  "file": "emigrazione.mp3",
+  "durata": 10.62,
+  "byte": 42957
+ },
+ "verga": {
+  "file": "verga.mp3",
+  "durata": 10.68,
+  "byte": 43149
+ },
+ "pinocchio": {
+  "file": "pinocchio.mp3",
+  "durata": 11.35,
+  "byte": 45837
+ },
+ "cuore": {
+  "file": "cuore.mp3",
+  "durata": 10.35,
+  "byte": 41901
+ },
+ "pizza-margherita": {
+  "file": "pizza-margherita.mp3",
+  "durata": 10.25,
+  "byte": 41517
+ },
+ "burri-sicilia": {
+  "file": "burri-sicilia.mp3",
+  "durata": 11.8,
+  "byte": 47661
+ },
+ "fasci-siciliani": {
+  "file": "fasci-siciliani.mp3",
+  "durata": 10.05,
+  "byte": 40653
+ },
+ "marconi": {
+  "file": "marconi.mp3",
+  "durata": 12.68,
+  "byte": 51213
+ },
+ "crispi-africa": {
+  "file": "crispi-africa.mp3",
+  "durata": 11.7,
+  "byte": 47277
+ },
+ "bava-beccaris": {
+  "file": "bava-beccaris.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "fiat": {
+  "file": "fiat.mp3",
+  "durata": 10.47,
+  "byte": 42381
+ },
+ "umberto": {
+  "file": "umberto.mp3",
+  "durata": 11.68,
+  "byte": 47181
+ },
+ "giolitti": {
+  "file": "giolitti.mp3",
+  "durata": 9.82,
+  "byte": 39789
+ },
+ "traforo-sempione": {
+  "file": "traforo-sempione.mp3",
+  "durata": 10.4,
+  "byte": 42093
+ },
+ "montessori": {
+  "file": "montessori.mp3",
+  "durata": 10.57,
+  "byte": 42765
+ },
+ "messina-1908": {
+  "file": "messina-1908.mp3",
+  "durata": 10.97,
+  "byte": 44397
+ },
+ "olivetti": {
+  "file": "olivetti.mp3",
+  "durata": 10.5,
+  "byte": 42477
+ },
+ "futurismo": {
+  "file": "futurismo.mp3",
+  "durata": 11.25,
+  "byte": 45453
+ },
+ "suffragio": {
+  "file": "suffragio.mp3",
+  "durata": 12.12,
+  "byte": 49005
+ },
+ "ansaldo": {
+  "file": "ansaldo.mp3",
+  "durata": 9.85,
+  "byte": 39885
+ },
+ "grande-guerra": {
+  "file": "grande-guerra.mp3",
+  "durata": 13.03,
+  "byte": 52557
+ },
+ "terremoto-avezzano": {
+  "file": "terremoto-avezzano.mp3",
+  "durata": 11.62,
+  "byte": 46989
+ },
+ "asiago": {
+  "file": "asiago.mp3",
+  "durata": 11.2,
+  "byte": 45261
+ },
+ "gorizia": {
+  "file": "gorizia.mp3",
+  "durata": 9.55,
+  "byte": 38637
+ },
+ "caporetto": {
+  "file": "caporetto.mp3",
+  "durata": 11.55,
+  "byte": 46701
+ },
+ "ragazzi-99": {
+  "file": "ragazzi-99.mp3",
+  "durata": 11.62,
+  "byte": 46989
+ },
+ "piave": {
+  "file": "piave.mp3",
+  "durata": 8.8,
+  "byte": 35661
+ },
+ "spagnola": {
+  "file": "spagnola.mp3",
+  "durata": 9.35,
+  "byte": 37869
+ },
+ "vittorio-veneto": {
+  "file": "vittorio-veneto.mp3",
+  "durata": 9.88,
+  "byte": 39981
+ },
+ "fiume": {
+  "file": "fiume.mp3",
+  "durata": 10.95,
+  "byte": 44301
+ },
+ "ordine-nuovo": {
+  "file": "ordine-nuovo.mp3",
+  "durata": 11.18,
+  "byte": 45165
+ },
+ "vittoria-mutilata": {
+  "file": "vittoria-mutilata.mp3",
+  "durata": 9.72,
+  "byte": 39405
+ },
+ "biennio-rosso": {
+  "file": "biennio-rosso.mp3",
+  "durata": 11.78,
+  "byte": 47565
+ },
+ "squadrismo": {
+  "file": "squadrismo.mp3",
+  "durata": 11.05,
+  "byte": 44685
+ },
+ "marcia-roma": {
+  "file": "marcia-roma.mp3",
+  "durata": 11.3,
+  "byte": 45645
+ },
+ "acerbo": {
+  "file": "acerbo.mp3",
+  "durata": 8.03,
+  "byte": 32589
+ },
+ "aventino": {
+  "file": "aventino.mp3",
+  "durata": 11.4,
+  "byte": 46029
+ },
+ "matteotti": {
+  "file": "matteotti.mp3",
+  "durata": 10.5,
+  "byte": 42477
+ },
+ "quota-90": {
+  "file": "quota-90.mp3",
+  "durata": 10.55,
+  "byte": 42669
+ },
+ "lateranensi": {
+  "file": "lateranensi.mp3",
+  "durata": 10.1,
+  "byte": 40845
+ },
+ "bonifica": {
+  "file": "bonifica.mp3",
+  "durata": 9.3,
+  "byte": 37677
+ },
+ "iri": {
+  "file": "iri.mp3",
+  "durata": 11.03,
+  "byte": 44589
+ },
+ "etiopia-1936": {
+  "file": "etiopia-1936.mp3",
+  "durata": 12.12,
+  "byte": 49005
+ },
+ "cinecitta": {
+  "file": "cinecitta.mp3",
+  "durata": 9.57,
+  "byte": 38733
+ },
+ "eur": {
+  "file": "eur.mp3",
+  "durata": 13.1,
+  "byte": 52845
+ },
+ "fermi": {
+  "file": "fermi.mp3",
+  "durata": 11.25,
+  "byte": 45453
+ },
+ "leggi-razziali": {
+  "file": "leggi-razziali.mp3",
+  "durata": 13.2,
+  "byte": 53229
+ },
+ "grecia-1940": {
+  "file": "grecia-1940.mp3",
+  "durata": 10.05,
+  "byte": 40653
+ },
+ "guerra-1940": {
+  "file": "guerra-1940.mp3",
+  "durata": 11.65,
+  "byte": 47085
+ },
+ "taranto-1940": {
+  "file": "taranto-1940.mp3",
+  "durata": 11.4,
+  "byte": 46029
+ },
+ "cefalonia": {
+  "file": "cefalonia.mp3",
+  "durata": 12.38,
+  "byte": 49965
+ },
+ "deportazione-roma": {
+  "file": "deportazione-roma.mp3",
+  "durata": 8.85,
+  "byte": 35853
+ },
+ "otto-settembre": {
+  "file": "otto-settembre.mp3",
+  "durata": 11.2,
+  "byte": 45261
+ },
+ "quattro-giornate": {
+  "file": "quattro-giornate.mp3",
+  "durata": 11.53,
+  "byte": 46605
+ },
+ "sbarco-sicilia": {
+  "file": "sbarco-sicilia.mp3",
+  "durata": 9.93,
+  "byte": 40173
+ },
+ "anzio": {
+  "file": "anzio.mp3",
+  "durata": 8.5,
+  "byte": 34509
+ },
+ "ardeatine": {
+  "file": "ardeatine.mp3",
+  "durata": 10.07,
+  "byte": 40749
+ },
+ "cassino": {
+  "file": "cassino.mp3",
+  "durata": 10.85,
+  "byte": 43917
+ },
+ "gap": {
+  "file": "gap.mp3",
+  "durata": 11.28,
+  "byte": 45549
+ },
+ "monte-sole": {
+  "file": "monte-sole.mp3",
+  "durata": 11.25,
+  "byte": 45453
+ },
+ "repubblica-ossola": {
+  "file": "repubblica-ossola.mp3",
+  "durata": 11.25,
+  "byte": 45453
+ },
+ "liberazione": {
+  "file": "liberazione.mp3",
+  "durata": 9.8,
+  "byte": 39693
+ },
+ "roma-citta-aperta": {
+  "file": "roma-citta-aperta.mp3",
+  "durata": 9.68,
+  "byte": 39213
+ },
+ "donne-voto": {
+  "file": "donne-voto.mp3",
+  "durata": 9.72,
+  "byte": 39405
+ },
+ "referendum-1946": {
+  "file": "referendum-1946.mp3",
+  "durata": 9.38,
+  "byte": 37965
+ },
+ "vespa": {
+  "file": "vespa.mp3",
+  "durata": 9.7,
+  "byte": 39309
+ },
+ "portella": {
+  "file": "portella.mp3",
+  "durata": 10.3,
+  "byte": 41709
+ },
+ "costituzione": {
+  "file": "costituzione.mp3",
+  "durata": 11.15,
+  "byte": 45069
+ },
+ "elezioni-1948": {
+  "file": "elezioni-1948.mp3",
+  "durata": 12.75,
+  "byte": 51501
+ },
+ "ladri-biciclette": {
+  "file": "ladri-biciclette.mp3",
+  "durata": 10.7,
+  "byte": 43245
+ },
+ "marshall": {
+  "file": "marshall.mp3",
+  "durata": 11.18,
+  "byte": 45165
+ },
+ "riforma-agraria": {
+  "file": "riforma-agraria.mp3",
+  "durata": 11.8,
+  "byte": 47661
+ },
+ "polesine": {
+  "file": "polesine.mp3",
+  "durata": 10.32,
+  "byte": 41805
+ },
+ "eni": {
+  "file": "eni.mp3",
+  "durata": 9.88,
+  "byte": 39981
+ },
+ "televisione": {
+  "file": "televisione.mp3",
+  "durata": 10.57,
+  "byte": 42765
+ },
+ "trieste-1954": {
+  "file": "trieste-1954.mp3",
+  "durata": 14.05,
+  "byte": 56685
+ },
+ "cinquecento": {
+  "file": "cinquecento.mp3",
+  "durata": 9.0,
+  "byte": 36429
+ },
+ "trattati-roma": {
+  "file": "trattati-roma.mp3",
+  "durata": 9.72,
+  "byte": 39405
+ },
+ "boom": {
+  "file": "boom.mp3",
+  "durata": 10.38,
+  "byte": 41997
+ },
+ "olivetti-elea": {
+  "file": "olivetti-elea.mp3",
+  "durata": 12.32,
+  "byte": 49773
+ },
+ "dolce-vita": {
+  "file": "dolce-vita.mp3",
+  "durata": 10.2,
+  "byte": 41229
+ },
+ "emigrazione-interna": {
+  "file": "emigrazione-interna.mp3",
+  "durata": 10.72,
+  "byte": 43341
+ },
+ "olimpiadi-roma": {
+  "file": "olimpiadi-roma.mp3",
+  "durata": 9.7,
+  "byte": 39309
+ },
+ "autostrada-serenissima": {
+  "file": "autostrada-serenissima.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "vajont": {
+  "file": "vajont.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "autosole": {
+  "file": "autosole.mp3",
+  "durata": 9.57,
+  "byte": 38733
+ },
+ "alluvione-firenze": {
+  "file": "alluvione-firenze.mp3",
+  "durata": 10.12,
+  "byte": 40941
+ },
+ "sessantotto": {
+  "file": "sessantotto.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "piazza-fontana": {
+  "file": "piazza-fontana.mp3",
+  "durata": 10.65,
+  "byte": 43053
+ },
+ "regioni": {
+  "file": "regioni.mp3",
+  "durata": 10.43,
+  "byte": 42189
+ },
+ "divorzio": {
+  "file": "divorzio.mp3",
+  "durata": 9.95,
+  "byte": 40269
+ },
+ "basaglia": {
+  "file": "basaglia.mp3",
+  "durata": 9.8,
+  "byte": 39693
+ },
+ "moro": {
+  "file": "moro.mp3",
+  "durata": 11.0,
+  "byte": 44493
+ },
+ "servizio-sanitario": {
+  "file": "servizio-sanitario.mp3",
+  "durata": 10.62,
+  "byte": 42957
+ },
+ "bologna-1980": {
+  "file": "bologna-1980.mp3",
+  "durata": 11.7,
+  "byte": 47277
+ },
+ "irpinia": {
+  "file": "irpinia.mp3",
+  "durata": 11.97,
+  "byte": 48333
+ },
+ "sinistrosi-anni": {
+  "file": "sinistrosi-anni.mp3",
+  "durata": 12.28,
+  "byte": 49581
+ },
+ "vermicino": {
+  "file": "vermicino.mp3",
+  "durata": 11.47,
+  "byte": 46413
+ },
+ "mundial": {
+  "file": "mundial.mp3",
+  "durata": 13.32,
+  "byte": 53805
+ },
+ "internet-italia": {
+  "file": "internet-italia.mp3",
+  "durata": 12.3,
+  "byte": 49677
+ },
+ "maxiprocesso": {
+  "file": "maxiprocesso.mp3",
+  "durata": 12.1,
+  "byte": 48909
+ },
+ "chernobyl-italia": {
+  "file": "chernobyl-italia.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "erasmus": {
+  "file": "erasmus.mp3",
+  "durata": 10.82,
+  "byte": 43821
+ },
+ "capaci": {
+  "file": "capaci.mp3",
+  "durata": 12.95,
+  "byte": 52269
+ },
+ "mani-pulite": {
+  "file": "mani-pulite.mp3",
+  "durata": 11.12,
+  "byte": 44973
+ },
+ "tangentopoli-craxi": {
+  "file": "tangentopoli-craxi.mp3",
+  "durata": 9.8,
+  "byte": 39693
+ },
+ "assisi-1997": {
+  "file": "assisi-1997.mp3",
+  "durata": 11.03,
+  "byte": 44589
+ },
+ "schengen": {
+  "file": "schengen.mp3",
+  "durata": 11.7,
+  "byte": 47277
+ },
+ "giubileo-2000": {
+  "file": "giubileo-2000.mp3",
+  "durata": 10.32,
+  "byte": 41805
+ },
+ "euro": {
+  "file": "euro.mp3",
+  "durata": 10.8,
+  "byte": 43629
+ },
+ "laquila": {
+  "file": "laquila.mp3",
+  "durata": 11.25,
+  "byte": 45453
+ },
+ "grandi-navi": {
+  "file": "grandi-navi.mp3",
+  "durata": 9.78,
+  "byte": 39597
+ },
+ "lampedusa": {
+  "file": "lampedusa.mp3",
+  "durata": 9.97,
+  "byte": 40365
+ },
+ "papa-francesco": {
+  "file": "papa-francesco.mp3",
+  "durata": 10.82,
+  "byte": 43821
+ },
+ "expo": {
+  "file": "expo.mp3",
+  "durata": 10.03,
+  "byte": 40557
+ },
+ "amatrice": {
+  "file": "amatrice.mp3",
+  "durata": 11.57,
+  "byte": 46797
+ },
+ "morandi": {
+  "file": "morandi.mp3",
+  "durata": 10.62,
+  "byte": 42957
+ },
+ "codogno": {
+  "file": "codogno.mp3",
+  "durata": 12.3,
+  "byte": 49677
+ },
+ "europei-2021": {
+  "file": "europei-2021.mp3",
+  "durata": 10.03,
+  "byte": 40557
+ },
+ "pnrr": {
+  "file": "pnrr.mp3",
+  "durata": 10.03,
+  "byte": 40557
+ }
+}

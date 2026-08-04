@@ -124,6 +124,7 @@ const cardDesc = document.getElementById('cardDesc');
 const cardVox = document.getElementById('cardVox');
 const voxWrap = document.getElementById('voxWrap');
 const voxFull = document.getElementById('voxFull');
+const voxAudio = document.getElementById('voxAudio');
 const voxTitolo = document.getElementById('voxTitolo');
 const quiet = document.getElementById('quiet');
 const quietList = document.getElementById('quietList');
@@ -844,9 +845,65 @@ function ricostruisciCronaca() {
   [...pb.mostrati.values()].map(r => r.ev).sort((a, b) => a.ay - b.ay).forEach(aggiungiRiga);
 }
 
+/* ================= lettura degli eventi ================= */
+
+/* Un solo elemento audio riusato per tutte le schede: i file stanno in
+   `audio/<id>.mp3`, generati con Voicebox. Chi non ce l'ha (un evento aggiunto
+   dopo l'ultimo doppiaggio) fa scattare `error` e il pulsante sparisce, senza
+   che serva un elenco da tenere allineato a mano. */
+
+const lettura = new Audio();
+lettura.preload = 'none';
+
+/* Premendo il pulsante mentre parla si zittisce, e da lì in poi le schede
+   restano mute finché non lo si preme di nuovo: chi vuole silenzio lo chiede
+   una volta sola. La scelta dura quanto la visita, non viene memorizzata. */
+let letturaMuta = false;
+
+function segnaAudio(stato) {
+  voxAudio.classList.toggle('suona', stato === 'suona');
+  voxAudio.classList.toggle('muto', stato === 'muto');
+  voxAudio.classList.toggle('assente', stato === 'assente');
+  voxAudio.title = stato === 'suona' ? 'Interrompi la lettura' : 'Riascolta il racconto';
+}
+
+lettura.addEventListener('playing', () => segnaAudio('suona'));
+lettura.addEventListener('ended', () => segnaAudio(letturaMuta ? 'muto' : ''));
+lettura.addEventListener('pause', () => segnaAudio(letturaMuta ? 'muto' : ''));
+lettura.addEventListener('error', () => segnaAudio('assente'));
+
+function leggi(ev) {
+  const src = 'audio/' + ev.id + '.mp3';
+  if (!lettura.src.endsWith(src)) lettura.src = src;
+  lettura.currentTime = 0;
+  /* Il browser blocca l'audio finché non c'è stata un'interazione: qui una
+     c'è sempre stata (la scheda si apre con un tocco), ma se la pagina parte
+     già su un evento la promessa viene respinta e va lasciata cadere.
+     Se invece a mancare è il file, `error` è già scattato e ha ragione lui. */
+  lettura.play().catch(() => segnaAudio(lettura.error ? 'assente' : ''));
+}
+
+function fermaLettura() {
+  lettura.pause();
+  lettura.currentTime = 0;
+}
+
+voxAudio.addEventListener('click', e => {
+  e.stopPropagation();
+  if (!lettura.paused) {            // sta parlando: zittiscila e resta muta
+    letturaMuta = true;
+    fermaLettura();
+    segnaAudio('muto');
+  } else if (evScheda) {            // riascolta, e riaccende l'audio
+    letturaMuta = false;
+    leggi(evScheda);
+  }
+});
+
 /* ================= scheda evento ================= */
 
 let schedaAperta = false;
+let evScheda = null;
 
 function apriScheda(ev) {
   pb.eraPrima = pb.attivo;
@@ -861,12 +918,17 @@ function apriScheda(ev) {
     `<br><small>trascina per girare, pizzica o rotella per avvicinarti</small>`;
   eventCard.classList.remove('hidden');
   schedaAperta = true;
+  evScheda = ev;
+  segnaAudio(letturaMuta ? 'muto' : '');
+  if (!letturaMuta) leggi(ev);
   VoxScena.play(cardVox, ev);        // il canvas dev'essere visibile per misurarlo
 }
 
 function chiudiScheda() {
   if (!schedaAperta) return;
   aTuttoSchermo(false);
+  fermaLettura();
+  evScheda = null;
   VoxScena.stop();
   eventCard.classList.add('hidden');
   schedaAperta = false;
