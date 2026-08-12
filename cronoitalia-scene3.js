@@ -669,7 +669,8 @@ genserico(rng) {
     statici(m) {
       suolo(m, 12, P.pietraChiara, P.terra, rng);
       for (let i = 0; i < 5; i++) { m.colonna(-9 + i * 4, -8, 1, 7, P.marmo); m.p(-9 + i * 4, 8, -8, P.marmoOmbra); }
-      for (let i = 0; i < 6; i++) casa(m, -10 + i * 4, 4, 3, 3, 3, P.cotto, P.tetto, 1);
+      // le case arretrate: a z=4 i vandali col bottino ci passavano dentro
+      for (let i = 0; i < 6; i++) casa(m, -10 + i * 4, 7, 3, 3, 3, P.cotto, P.tetto, 1);
       cattedrale(m, 4, -6, 6, 6, 5, P.marmo, P.marmoOmbra);
     },
     dinamici(d, t) {
@@ -814,15 +815,21 @@ taormina(rng) {
     cielo: TRAMONTO, raggio: FUOCOLUCE,
     statici(m) {
       for (let x = -12; x <= 12; x++) for (let z = 6; z <= 12; z++) m.p(x, 0, z, P.mare);
+      /* La costa sale verso l'interno, ma la salita si ferma a quattro e in
+         mezzo c'è un terrazzo: libera, arrivava a dodici blocchi e da questa
+         camera era un muro di roccia messo davanti a tutto il resto. Città e
+         teatro si posano sul terrazzo — appoggiati alla sua quota, se no la
+         cinta resta sepolta nel fianco e in superficie ne spunta una fila. */
       for (let x = -12; x <= 12; x++) for (let z = -12; z <= 5; z++) {
-        const h = Math.max(1, Math.round((5 - z) * .7));
+        const salita = Math.max(1, Math.min(4, Math.round((5 - z) * .55)));
+        const h = (z >= -10 && z <= -2) ? 3 : salita;
         for (let y = 1; y <= h; y++) m.p(x, y, z, y === h ? P.erbaScura : P.roccia);
       }
-      mura(m, -6, -6, 13, 8, 5, P.pietraChiara);
-      // il teatro greco affacciato sul mare
+      mura(m, -6, -9, 12, 7, 3, P.pietraChiara, 4);
+      // il teatro greco, affacciato sul mare dal ciglio del terrazzo
       for (let k = 0; k < 4; k++) for (let a = 0; a < 14; a++) {
         const an = Math.PI + a / 14 * Math.PI;
-        m.p(Math.round(Math.cos(an) * (5 - k)) + 8, 9 + k, Math.round(Math.sin(an) * (5 - k)) - 2, P.sabbia);
+        m.p(Math.round(Math.cos(an) * (5 - k)) + 8, 4 + k, Math.round(Math.sin(an) * (5 - k)) - 2, P.sabbia);
       }
     },
     dinamici(d, t) {
@@ -836,7 +843,8 @@ taormina(rng) {
       for (let i = 0; i < 14; i++) {
         if (cade) break;
         const p = clamp01(f * 2 - i * .04);
-        omino(d, -8 + (i % 7) * 2, 1.6, 7 - p * 6, P.verdeIt, P.pelle, .8);
+        // salgono dalla riva, non dal mare aperto
+        omino(d, -8 + (i % 7) * 2, 1.6 + p * 2.4, 5.4 - p * 4.4, P.verdeIt, P.pelle, .8);
       }
       bandiera(d, t, 6, 8, -6, 2, cade ? [P.verdeIt, P.verdeIt] : [P.indaco, P.oro], 0);
       if (!cade) fuoco(d, t, -2, 6, -4, 6, 1, 0);
@@ -1056,26 +1064,30 @@ costanza(rng) {
   return {
     cielo: GIORNO, raggio: CALDO,
     statici(m) {
+      /* Il costone ha un ripiano in cima, e la basilica ci sta sopra appoggiata
+         alla quota giusta: con il rilievo libero e la chiesa posata a y=1 le
+         due navate finivano dentro il fianco del monte. */
       for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) {
-        const h = Math.max(0, Math.round(4 - Math.abs(z) * .35));
+        const h = Math.abs(z) <= 5 ? 3 : Math.max(0, Math.round(4.6 - Math.abs(z) * .38));
         m.p(x, h, z, h > 1 ? P.erbaScura : P.terra);
         for (let y = 0; y < h; y++) m.p(x, y, z, P.roccia);
       }
-      // due chiese sovrapposte
-      cattedrale(m, -5, -4, 11, 8, 5, P.marmo, P.tetto);
-      for (let x = -5; x <= 5; x++) for (let z = -4; z <= 3; z++) m.p(x, 5, z, P.marmoOmbra);
+      // due chiese sovrapposte, sul ripiano
+      cattedrale(m, -5, -4, 11, 8, 5, P.marmo, P.tetto, 4);
+      for (let x = -5; x <= 5; x++) for (let z = -4; z <= 3; z++) m.p(x, 8, z, P.marmoOmbra);
     },
     dinamici(d, t) {
       /* Sopra la tomba di chi voleva morire nudo sulla nuda terra si alzano due
          chiese, e Giotto le riempie di affreschi. */
       const f = (t * .12) % 1.3;
+      // gli affreschi stanno sulla facciata, e la facciata ora parte da y=4
       for (let i = 0; i < 12; i++) {
         if (f < i / 14) continue;
-        const x = -4.5 + (i % 6) * 1.8, y = 7 + Math.floor(i / 6) * 2;
+        const x = -4.5 + (i % 6) * 1.8, y = 5.4 + Math.floor(i / 6) * 2;
         d(x, y, -4.4, 1.2, i % 3 ? P.sabbia : P.acquaChiara);
         omino(d, x, y - .4, -4.2, i % 2 ? P.nero : P.oro, P.pelle, .5);
       }
-      folla(d, t, 0, 6, 10, 1.6, [P.nero, P.tela], 1.2);
+      folla(d, t, 0, 4, 10, 1.4, [P.nero, P.tela], 4.2);   // sul sagrato, in cima al ripiano
       for (let i = 0; i < 8; i++) {
         const a = t * .5 + i * .8;
         d(Math.cos(a) * 8, 12 + Math.sin(a * 2) * 1.4, Math.sin(a) * 8, .4, P.nero);
@@ -2175,22 +2187,30 @@ leopardi(rng) {
         m.p(x, h, z, h > 1 ? P.erbaScura : P.pietraChiara);
         for (let y = 0; y < h; y++) m.p(x, y, z, P.terra);
       }
-      for (let z = -12; z <= 12; z++) for (let y = 1; y <= 5; y++) m.p(-2, 5 + y, z, P.pietraChiara);
+      /* Le mura del Gianicolo poggiano sul crinale (lì il terreno arriva a tre)
+         e si interrompono dov'è la breccia: quel tratto lo disegna
+         l'animazione, se no il muro statico restava in piedi dietro quello che
+         crollava e la breccia non si apriva mai. */
+      for (let z = -12; z <= 12; z++) {
+        if (z >= -3 && z <= 3) continue;
+        for (let y = 4; y <= 7; y++) m.p(-2, y, z, P.pietraChiara);
+      }
       for (let i = 0; i < 4; i++) casa(m, 3 + (i % 2) * 5, -8 + i * 5, 4, 4, 4, P.cotto, P.tetto, 1);
     },
     dinamici(d, t) {
       /* Sul Gianicolo si resiste per settimane a un esercito francese: una
          costituzione che abolisce la pena di morte, e cade sotto i cannoni. */
       const f = (t * .1) % 1;
+      // i difensori sul camminamento, ai due lati della breccia
       for (let i = 0; i < 14; i++)
-        omino(d, -3 + (i % 7) * .9, 6.4, -6 + Math.floor(i / 7) * 3, P.rossoIt, P.pelle, .8);
+        omino(d, -2, 8.2, -9 + Math.floor(i / 7) * 12 + (i % 7) * .8, P.rossoIt, P.pelle, .8);
       for (let k = 0; k < 4; k++) {                       // le cannonate
         const g = ((t * .6 + k * .25) % 1);
         d(-11 + g * 8, 7 + Math.sin(g * Math.PI) * 4, -6 + k * 4, .9, P.roccia);
       }
       const breccia = clamp01((f - .5) * 2.2);
-      for (let z = -3; z <= 3; z++) for (let y = 1; y <= 5 - breccia * 5; y++)
-        d(-2, 5 + y, z, 1, P.pietraChiara);
+      for (let z = -3; z <= 3; z++) for (let y = 4; y <= 7 - breccia * 4; y++)
+        d(-2, y, z, 1, P.pietraChiara);
       for (let i = 0; i < 10; i++) {
         const g = (t * .5 + i * .1) % 1;
         d(-2, 6 + g * 3, -4 + (i % 6) * 1.6, .8 * (1 - g), P.fumo);

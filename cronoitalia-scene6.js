@@ -173,21 +173,31 @@ gracchi(rng) {
          Verrà ucciso a bastonate: la politica romana scopre il sangue. */
       const f = (t * .09) % 1;
       const proposta = f < .55;
+      /* La stessa quota che disegna `collina(12, 4)`: senza, la folla stava a
+         y=1.4 su un colle che al centro è alto quattro, cioè dentro la roccia. */
+      const quota = r => Math.max(0, Math.round(4 - r / 3));
       omino(d, 0, 5.4, 0, P.tela, P.pelle, 1);
       if (proposta) {
         // le terre e la folla si ritirano prima del passaggio, senza lampo
         const dp = dissolvenza(d, f, .55, .06);
         for (let i = 0; i < 12; i++) {                               // le terre assegnate
           if (f < i / 16) continue;
-          dp(-8 + (i % 6) * 3, 1.4, 6 + Math.floor(i / 6) * 3, 1.4, P.erba);
+          const x = -8 + (i % 6) * 3, z = 6 + Math.floor(i / 6) * 3;
+          dp(x, quota(Math.hypot(x, z)) + 1.2, z, 1.4, P.erba);
         }
-        folla(dp, t, 0, 3, 20, 2, [P.terraScura, P.tela], 1.4);
+        for (let i = 0; i < 20; i++) {                               // la folla, sul pendio
+          const a = i * 2.399, r = 2.6 + (i % 5) * .9;
+          const x = Math.cos(a) * r, z = Math.sin(a) * r;
+          omino(dp, x, quota(Math.hypot(x, z)) + 1.1 + Math.abs(Math.sin(t * 3 + i)) * .28, z,
+            i % 2 ? P.terraScura : P.tela, P.pelle, .75);
+        }
       } else {
         const p = clamp01((f - .55) * 2.4);
         for (let i = 0; i < 12; i++) {
-          const a = i / 12 * Math.PI * 2;
-          omino(d, Math.cos(a) * (5 - p * 3.4), 5.4, Math.sin(a) * (5 - p * 3.4), P.nero, P.pelle, .8);
-          d(Math.cos(a) * (4.4 - p * 3), 6.6, Math.sin(a) * (4.4 - p * 3), .3, P.legno);
+          const a = i / 12 * Math.PI * 2, r = 5 - p * 3.4;
+          const x = Math.cos(a) * r, z = Math.sin(a) * r;
+          omino(d, x, quota(r) + 1.2, z, P.nero, P.pelle, .8);      // salgono, non fluttuano
+          d(Math.cos(a) * (r - .6), quota(r) + 2.4, Math.sin(a) * (r - .6), .3, P.legno);
         }
       }
     } };

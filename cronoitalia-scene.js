@@ -218,7 +218,10 @@ selinunte(rng) {
     statici(m) {
       suolo(m, 12, P.sabbia, P.terra, rng, 1);
       for (let x = -12; x <= 12; x++) for (let z = 8; z <= 12; z++) m.p(x, 0, z, P.mare);
-      tempio(m, -6, -4, 6, 4, 6, P.sabbia, P.marmoOmbra);
+      /* Il tempio parte dalla seconda fila: la prima è quella che crolla e si
+         rialza, e la disegna l'animazione. Prima le due si sovrapponevano, e i
+         rocchi cadevano dentro le colonne di pietra che restavano in piedi. */
+      tempio(m, -6, -2, 6, 3, 6, P.sabbia, P.marmoOmbra);
     },
     dinamici(d, t) {
       /* Il tempio crolla e si rialza: a Selinunte i rocchi delle colonne stanno
@@ -997,7 +1000,13 @@ attila(rng) {
     cielo: 0x2a1c18, nebbia: 0x3a2620, raggio: FUOCOLUCE, ambiente: .5,
     statici(m) {
       suolo(m, 12, P.erbaScura, P.terra, rng);
-      mura(m, -7, -6, 15, 11, 5, P.pietraChiara);
+      /* Tre lati di mura: il fronte, quello che si sbriciola sotto gli Unni, lo
+         disegna l'animazione. Con `mura` intero il muro di pietra restava in
+         piedi dietro quello che crollava, e Aquileia non cadeva mai. */
+      for (let x = -7; x <= 7; x++) for (let y = 1; y <= 5; y++) m.p(x, y, 4, P.pietraChiara);
+      for (let z = -5; z <= 4; z++) for (let y = 1; y <= 5; y++) {
+        m.p(-7, y, z, P.pietraChiara); m.p(7, y, z, P.pietraChiara);
+      }
       for (let i = 0; i < 5; i++) casa(m, -5 + i * 3, -3, 3, 3, 3, P.cotto, P.tetto, 1);
       for (let z = -12; z <= 12; z++) m.p(-10, 1, z, P.acqua);
     },
@@ -1366,23 +1375,30 @@ bobbio(rng) {
   return {
     cielo: 0x27354a, nebbia: 0x35455c, raggio: CALDO,
     statici(m) {
+      /* Il fondovalle è largo e i versanti stanno indietro: l'abbazia si posa a
+         y=1 come tutte le costruzioni del kit, e con le rocce che partivano da
+         cinque blocchi dal centro finiva mezza dentro il pendio. */
       for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) {
-        const h = Math.min(7, Math.round(Math.max(0, (Math.abs(x) - 5) * 1.2)));
-        m.p(x, h, z, h > 4 ? P.roccia : h > 0 ? P.foglieScure : P.erbaScura);
+        const h = Math.min(5, Math.round(Math.max(0, (Math.abs(x) - 9) * 1.6)));
+        m.p(x, h, z, h > 3 ? P.roccia : h > 0 ? P.foglieScure : P.erbaScura);
         for (let y = 0; y < h; y++) m.p(x, y, z, P.roccia);
       }
       for (let z = -12; z <= 12; z++) for (let x = -2; x <= 2; x++) m.p(x, 0, z, P.acqua);
       cattedrale(m, 3, -3, 6, 7, 5, P.pietraChiara, P.tetto);
       ponte(m, -3, 0, 7, 3, P.pietraChiara);
     },
-    dinamici(d, t) {
-      // i monaci copiano: le pagine si accumulano nello scriptorium
+    dinamici(d0, t) {
+      /* I monaci copiano nel chiostro, all'aperto, davanti all'abbazia: le
+         pagine stavano dentro il tetto della chiesa, dove nessuno le vedeva. */
       const f = (t * .14) % 1.3;
+      const d = dissolvenza(d0, f, 1.3);
       for (let i = 0; i < 14; i++) {
-        if (f < i / 14) continue;
-        d(4 + (i % 5) * 1.1, 7 + Math.floor(i / 5) * .6, 0, .7, P.tela);
+        const p = clamp01((f - i / 15) * 6);
+        if (p <= 0) continue;
+        const da = arrivo(d, p);
+        da(3 + (i % 5) * 1.2, 1.9 + Math.floor(i / 5) * .55, 6.5, .7, P.tela);
       }
-      for (let i = 0; i < 5; i++) omino(d, 4 + i * 1.2, 1.2, 4, P.nero, P.pelle, .8);
+      for (let i = 0; i < 5; i++) omino(d, 3 + i * 1.2, 1.2, 5, P.nero, P.pelle, .8);
       for (let x = -2; x <= 2; x += 2) for (let z = -12; z <= 12; z += 4)
         d(x, .6 + Math.sin(t * 2 + z * .4) * .2, z, 1.8, P.acquaChiara);
     },

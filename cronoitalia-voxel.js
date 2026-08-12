@@ -202,17 +202,20 @@ function tempio(m, x0, z0, cols, righe, h, c, cTetto) {
     for (let x = x0 - 1 + k; x <= x0 + w + 1 - k; x++) m.p(x, h + 1 + k, z0 - 1 + k, cTetto);
 }
 
-// Chiesa con navata, abside e campanile a fianco.
-function cattedrale(m, x0, z0, w, d, h, cMuro, cTetto) {
-  m.guscio(x0, 1, z0, w, h, d, cMuro);
+/* Chiesa con navata, abside e campanile a fianco.
+ * `y0` è la quota di posa, come in `casa` e in `mura`: su un rilievo la chiesa
+ * va appoggiata dove il terreno arriva davvero, se no sprofonda nel pendio. */
+function cattedrale(m, x0, z0, w, d, h, cMuro, cTetto, y0) {
+  y0 = y0 || 1;
+  m.guscio(x0, y0, z0, w, h, d, cMuro);
   for (let k = 0; k < Math.ceil(w / 2); k++)
     for (let x = x0 + k; x < x0 + w - k; x++) for (let z = z0; z < z0 + d; z++) {
       if (x > x0 + k && x < x0 + w - k - 1) continue;
-      m.p(x, 1 + h + k, z, cTetto);
+      m.p(x, y0 + h + k, z, cTetto);
     }
   const cx = x0 - 2, cz = z0 + 1;                      // il campanile
-  for (let y = 0; y < h + 6; y++) m.p(cx, 1 + y, cz, y > h + 3 ? cTetto : cMuro);
-  m.p(cx, h + 7, cz, P.oro);
+  for (let y = 0; y < h + 6; y++) m.p(cx, y0 + y, cz, y > h + 3 ? cTetto : cMuro);
+  m.p(cx, y0 + h + 6, cz, P.oro);
 }
 
 // Torre con merli, per rocche e cinte murarie.
@@ -222,14 +225,18 @@ function torre(m, x, z, h, c, merli) {
   if (merli !== false) for (const [dx, dz] of [[0, 0], [1, 1]]) m.p(x + dx, 1 + h, z + dz, c);
 }
 
-// Cinta muraria rettangolare con torri agli angoli.
-function mura(m, x0, z0, w, d, h, c) {
+/* Cinta muraria rettangolare con merli agli angoli.
+ * `y0` è la quota di posa, come in `casa`: su un terrazzo o su un pendio la
+ * cinta va appoggiata dove il terreno arriva davvero, se no resta sepolta nel
+ * fianco della collina e in superficie ne spunta solo l'ultima fila. */
+function mura(m, x0, z0, w, d, h, c, y0) {
+  y0 = y0 || 1;
   for (let x = x0; x < x0 + w; x++) for (const z of [z0, z0 + d - 1])
-    for (let y = 0; y < h; y++) m.p(x, 1 + y, z, y === h - 1 && x % 2 ? c : c);
+    for (let y = 0; y < h; y++) m.p(x, y0 + y, z, c);
   for (let z = z0; z < z0 + d; z++) for (const x of [x0, x0 + w - 1])
-    for (let y = 0; y < h; y++) m.p(x, 1 + y, z, c);
-  for (let x = x0; x < x0 + w; x += 2) { m.p(x, 1 + h, z0, c); m.p(x, 1 + h, z0 + d - 1, c); }
-  for (let z = z0; z < z0 + d; z += 2) { m.p(x0, 1 + h, z, c); m.p(x0 + w - 1, 1 + h, z, c); }
+    for (let y = 0; y < h; y++) m.p(x, y0 + y, z, c);
+  for (let x = x0; x < x0 + w; x += 2) { m.p(x, y0 + h, z0, c); m.p(x, y0 + h, z0 + d - 1, c); }
+  for (let z = z0; z < z0 + d; z += 2) { m.p(x0, y0 + h, z, c); m.p(x0 + w - 1, y0 + h, z, c); }
 }
 
 // Nave animata: scafo, albero, vele, remi che battono. `verso` è +1 o -1.
@@ -1055,27 +1062,45 @@ alarico(rng) {
 },
 
 benedetto(rng) {
+  /* La quota del monte si calcola una volta e la usano tutti: prima l'abbazia,
+     il campanile, il sentiero e i monaci avevano ciascuno la propria idea di
+     quanto fosse alta la montagna sotto di loro, e finivano chi dentro la
+     roccia e chi appeso in aria. La cima è un ripiano, perché un'abbazia su una
+     punta di cono non ci sta. */
+  const quota = (x, z) => {
+    const r = Math.hypot(x, z);
+    return r < 6.5 ? 5 : Math.max(0, Math.round(5 + (6.5 - r) * .8));
+  };
+  // il sentiero: lastre che salgono dal piano alla cima, ognuna alla sua quota
+  // si ferma sul sagrato: se entra sotto l'abbazia, l'abbazia perde il tetto
+  // per far vedere i monaci, e resta un'abbazia scoperchiata
+  const sentiero = [];
+  for (let k = 0; k <= 10; k++) {
+    const x = Math.round(10 - k * .5), z = Math.round(9 - k * .4);
+    sentiero.push([x, quota(x, z) + 1, z]);
+  }
   return {
     cielo: 0x243449, raggio: 0xffeccc,
     statici(m) {
-      // il monte, a gradoni
       for (let x = -12; x <= 12; x++) for (let z = -12; z <= 12; z++) {
-        const h = Math.max(0, Math.round(5 - Math.hypot(x, z) * .45));
+        const h = quota(x, z);
         m.p(x, h, z, h > 3 ? P.pietraChiara : P.erbaScura);
         for (let y = 0; y < h; y++) m.p(x, y, z, P.roccia);
       }
       casa(m, -4, -3, 8, 7, 4, P.marmo, P.tetto, 6);                // l'abbazia
       for (let y = 0; y < 8; y++) m.p(-5, 6 + y, -4, y > 5 ? P.tetto : P.marmoOmbra);
       m.p(-5, 14, -4, P.oro);
-      for (let i = 0; i < 5; i++) albero(m, -10 + i * 5, 10, 1, rng);
-      for (let k = 0; k < 12; k++) m.p(Math.round(6 - k * .6), Math.max(0, 5 - Math.round(k * .45)) + 1, k - 3, P.sabbia);
+      for (let i = 0; i < 4; i++) albero(m, -10 + i * 6, 11, quota(-10 + i * 6, 11), rng);
+      for (const [x, y, z] of sentiero) m.p(x, y - 1, z, P.sabbia);
     },
     dinamici(d, t) {
-      // i monaci salgono in fila lungo il sentiero
+      // i monaci salgono in fila lungo il sentiero, di lastra in lastra
       for (let i = 0; i < 7; i++) {
-        const k = ((t * 1.1 + i * 1.6) % 14);
-        const x = 6 - k * .6, y = Math.max(0, 5 - Math.round(k * .45)) + 1.1, z = k - 3;
-        omino(d, x, y, z, P.nero, P.pelle, .8);
+        const p = (t * .5 + i * 1.7) % (sentiero.length - 1);
+        const k = Math.floor(p), f = p - k;
+        const a = sentiero[k], b = sentiero[k + 1];
+        omino(d, a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f + .1, a[2] + (b[2] - a[2]) * f,
+          P.nero, P.pelle, .8);
       }
       const camp = Math.sin(t * 2.4) * .35;                          // la campana
       d(-5 + camp, 12.6, -4, .8, P.bronzo);
@@ -2212,7 +2237,11 @@ function scoperchia(blocchi, azione, sc) {
       while (coda.length) {
         const c = coda.pop();
         gruppo.push(c);
-        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]])
+        /* Si salta anche una cella di vuoto: i soffitti a travi e i solai a
+           cassettoni sono fatti di file distanziate di due, e a cercare solo i
+           vicini attaccati ogni trave era una distesa a sé, larga una cella, e
+           quindi salva. Sopra la testa restavano tutte. */
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [2, 0], [-2, 0], [0, 2], [0, -2]])
           for (let dy = -1; dy <= 1; dy++) {
             const v = cella(c.x + dx, c.y + dy, c.z + dz);
             if (v && cand.has(v) && !visti.has(v)) { visti.add(v); coda.push(v); }

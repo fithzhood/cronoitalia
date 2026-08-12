@@ -84,6 +84,30 @@ rilancia senza `--prova` e sposta il lotto in `tools/fusi/`.
 
 ---
 
+## La carta si sfoglia (12 agosto 2026)
+
+All'inizio la carta era muta: si sceglieva l'anno, si premeva **Viaggia**, si
+guardava la corsa, e per cambiare secolo si tornava su e si rimetteva il
+cursore. Tre gesti per una domanda sola. Ora **gli eventi stanno già sulla
+carta**, quelli entro vent'anni dall'anno scelto (`SCARTO`, in
+`cronoitalia.js`): si muove il cursore e i fatti compaiono dove sono successi,
+pronti da toccare. Il viaggio resta per chi vuole vedere la storia scorrere, e
+tornando indietro si resta **all'anno a cui il racconto era arrivato**.
+
+Due cose sono venute dietro:
+
+- **I grappoli.** A Roma succede tutto, e da un'Italia intera i marcatori di
+  Roma sono lo stesso pixel: nel 1935 ce n'erano ventinove sovrapposti, e
+  quindici hanno le identiche coordinate, per cui nessuno zoom li avrebbe mai
+  separati. Quando due o più si pestano i piedi (meno di `VICINI_PX` sullo
+  schermo) si nascondono e al loro posto compare un gettone d'oro con il numero;
+  toccarlo apre l'elenco in ordine di anno.
+- **Le targhe delle epoche non stanno più in mezzo alla carta.** Mentre il tempo
+  scorre le epoche si susseguono, e una targa al centro dello schermo copriva
+  proprio quello che si era andati a guardare. Ora sono una fascia sottile in
+  alto che se ne va da sola, più un lampo d'oro sulla legenda, dove il nome
+  dell'epoca sta scritto sempre.
+
 ## Le tre idee da capire prima di toccare il codice
 
 ### 1. La mappa è una topologia, non un elenco di poligoni
@@ -215,12 +239,29 @@ la salta — e allora l'azione va portata fuori a mano, sul sagrato. È quello c
 il cielo invece di cadere su un pavimento invisibile, i visitatori sono davanti
 al pronao.
 
-Il resto dei difetti trovati stava nelle scene, non nel motore: gente messa
-dentro le case (la folla del Duomo era centrata *dentro* la navata, i monatti
-della peste passavano attraverso una fila di case), la breccia di Caterina Sforza
-animata sopra un muro statico che non si apriva mai, il paese dell'Irpinia posato
-a y=1 su una collina alta cinque. Il banco di prova col tasto **rimetti il
-coperchio** serve a giudicarli a occhio, uno accanto all'altro.
+Il resto dei difetti trovati stava nelle scene, non nel motore, e sono tre
+famiglie che conviene riconoscere a colpo d'occhio quando se ne scrive una nuova:
+
+1. **Gente dentro le case.** La folla del Duomo era centrata *dentro* la navata,
+   i monatti della peste passavano attraverso una fila di case, i vandali di
+   Genserico camminavano dentro le abitazioni. Si sposta la gente, non si toglie
+   la casa. La colonna `dentro` di `check-vista.js` li trova tutti.
+2. **Costruzioni posate a y=1 su un terreno che a y=1 non c'è.** Ogni elemento
+   del kit si posa a y=1 se non gli si dice altro: su una collina, su un pendio
+   o su un crinale finisce sepolto (l'abbazia di Bobbio, la basilica di Assisi,
+   il paese dell'Irpinia dentro il fianco del monte) oppure appeso in aria (il
+   sentiero di Montecassino). Per questo `casa`, `mura` e `cattedrale` hanno un
+   parametro di **quota di posa**, e le scene con un rilievo dovrebbero
+   calcolare l'altezza del terreno una volta sola e passarla a tutti.
+3. **L'animazione disegnata sopra il pezzo statico che dovrebbe sostituire.**
+   La breccia di Caterina Sforza, le mura di Aquileia sotto Attila, il muro del
+   Gianicolo, le colonne di Selinunte: il muro di pietra restava in piedi dietro
+   quello che crollava, e il crollo — cioè tutta la scena — non si vedeva mai.
+   Il pezzo che si anima non va costruito anche fra gli statici: si fa la cinta
+   a tre lati e il quarto lo disegna `dinamici`.
+
+Il banco di prova col tasto **rimetti il coperchio** serve a giudicarli a
+occhio, uno accanto all'altro.
 
 ### Il kit
 
@@ -343,12 +384,10 @@ rigenerare la geometria.
 
 ## Cosa manca / si può fare
 
-- **29 scene nascondono ancora più di un terzo del movimento** (`node
-  tools/check-vista.js`). Non è più roba da motore: è composizione, e va
-  guardata una per una nel banco di prova. Il colonnato di villa Adriana davanti
-  alle statue, il monastero di Bobbio, il teatro di Taormina, la basilica di
-  Assisi. La colonna `dentro` dice quando il problema è che i figuranti stanno
-  proprio dentro un muro: quelle si sistemano spostando la gente, non il muro.
+- **19 scene nascondono ancora più di un terzo del movimento** (`node
+  tools/check-vista.js`; erano 104 prima dello scoperchiamento). Non è più roba
+  da motore: è composizione, e va guardata una per una nel banco di prova,
+  riconoscendo a quale delle tre famiglie qui sopra appartiene.
 
 - **49 scene hanno ancora un'animazione essenziale** (`node tools/check-anim.js`):
   28 `COMPARSE` (i pezzi arrivano ma poi il quadro sta fermo), 18 `QUASI-FERMA`
