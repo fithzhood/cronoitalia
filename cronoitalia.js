@@ -128,6 +128,10 @@ const voxAudio = document.getElementById('voxAudio');
 const voxTitolo = document.getElementById('voxTitolo');
 const quiet = document.getElementById('quiet');
 const quietList = document.getElementById('quietList');
+const picker = document.getElementById('picker');
+const pickerList = document.getElementById('pickerList');
+const pickerTitolo = document.getElementById('pickerTitolo');
+const pickerClose = document.getElementById('pickerClose');
 const quietClose = document.getElementById('quietClose');
 const legendEl = document.getElementById('legend');
 const legendEra = document.getElementById('legendEra');
@@ -305,6 +309,10 @@ function evidenzia(st) {
 }
 
 let striscioneTimer = null;
+/* Il cambio d'epoca si annuncia in due modi, tutti e due fuori dalla carta: una
+   fascia sottile in alto che se ne va da sola, e un lampo d'oro sulla legenda,
+   dove il nome dell'epoca sta scritto sempre. Prima era una targa in mezzo allo
+   schermo, e mentre il tempo scorreva copriva proprio quello che si guardava. */
 function mostraStriscione(era) {
   eraBanner.querySelector('h4').textContent = era.name;
   eraBanner.querySelector('p').textContent = era.note;
@@ -314,6 +322,11 @@ function mostraStriscione(era) {
   eraBanner.style.animation = '';
   clearTimeout(striscioneTimer);
   striscioneTimer = setTimeout(() => eraBanner.classList.add('hidden'), 3400);
+
+  const h2 = legendEl.querySelector('h2');
+  h2.classList.remove('lampo');
+  void h2.offsetWidth;
+  h2.classList.add('lampo');
 }
 
 legendToggle.addEventListener('click', () => {
@@ -580,6 +593,69 @@ function impostaAnno(y, conStriscione) {
   yearField.value = Math.abs(y);
   eraSelect.value = y < 0 ? 'aC' : 'dC';
   applicaPolitica(y, conStriscione !== false);
+  segnaCarta();
+}
+
+/* ================= gli eventi sulla carta =================
+ *
+ * Sulla carta, non solo dentro il racconto: si muove il cursore e i fatti di
+ * quegli anni compaiono dove sono successi, pronti da toccare. Prima bisognava
+ * scegliere l'anno, premere Viaggia, guardare la corsa e poi tornare su e
+ * rimettere il cursore per cambiare secolo — tre gesti per una domanda sola.
+ * Il viaggio resta per chi vuole vedere la storia scorrere; la carta ora si
+ * sfoglia e basta.
+ *
+ * Vent'anni di scarto: abbastanza per non lasciare la carta vuota fra un fatto
+ * e l'altro, poco abbastanza perché quel che si vede appartenga davvero
+ * all'anno che si è scelto. I fatti che durano (una guerra, un cantiere) si
+ * mostrano per tutta la loro durata. */
+
+const SCARTO = 20;
+
+function vicinoAllAnno(ev, anno) {
+  const fine = ev.aey != null ? ev.aey : ev.ay;
+  return fine >= anno - SCARTO && ev.ay <= anno + SCARTO;
+}
+
+/* Il cursore manda un evento a ogni pixel di corsa: ricostruire cinquanta
+   marcatori a ogni passo farebbe singhiozzare la carta. Si aspetta un attimo
+   di quiete e poi si aggiorna una volta sola. */
+let cartaTimer = null;
+function segnaCarta() {
+  if (stato.vista !== 'carta') return;
+  clearTimeout(cartaTimer);
+  cartaTimer = setTimeout(aggiornaCarta, 90);
+}
+
+function aggiornaCarta() {
+  if (stato.vista !== 'carta') return;
+  const anno = toAstro(stato.anno);
+  const vivi = new Set();
+  for (const ev of EVENTI) if (vicinoAllAnno(ev, anno)) vivi.add(ev.id);
+
+  for (const [id, rec] of pb.mostrati) if (!vivi.has(id)) { rimuoviEvento(rec); pb.mostrati.delete(id); }
+  for (const ev of EVENTI) if (vivi.has(ev.id) && !pb.mostrati.has(ev.id)) creaEvento(ev, true);
+
+  /* Sulla carta le rotte si vedono per intero: non c'è un tempo che scorre a
+     scoprirle un pezzo per volta. */
+  routesG.classList.add('ferme');
+  for (const rec of pb.mostrati.values()) {
+    if (rec.rotta && rec.len > 0) { rec.rotta.style.strokeDashoffset = 0; rec.testa.style.display = 'none'; }
+    rec.el.classList.remove('attivo', 'passato');
+  }
+  raggruppaMarcatori();
+  aggiornaSuggerimento(vivi.size);
+}
+
+function aggiornaSuggerimento(quanti) {
+  if (stato.vista !== 'carta') return;
+  const stretto = window.innerWidth < 760;      // sul telefono la riga è una sola
+  const anno = fmtAnno(stato.anno);
+  hintEl.textContent = quanti
+    ? (stretto ? `${quanti} ${quanti === 1 ? 'fatto' : 'fatti'} attorno al ${anno} — toccane uno`
+      : `${quanti} ${quanti === 1 ? 'fatto' : 'fatti'} attorno al ${anno} — toccane uno, o premi Viaggia per vedere la storia scorrere.`)
+    : (stretto ? `Attorno al ${anno} non c'è nulla di registrato`
+      : `Attorno al ${anno} non c'è nulla di registrato: muovi il cursore, o premi Viaggia.`);
 }
 
 yearSlider.addEventListener('input', () => impostaAnno(annoDaSlider(+yearSlider.value)));
@@ -624,9 +700,14 @@ function viaggia() {
 returnBtn.addEventListener('click', tornaAllaCarta);
 
 function tornaAllaCarta() {
+  /* Si torna all'anno a cui il racconto era arrivato, non a quello da cui era
+     partito: chi ferma la corsa nel 1848 vuole ripartire dal 1848, e prima
+     doveva rimettere il cursore a mano. */
+  const arrivato = stato.vista === 'racconto' ? daAstro(Math.round(pb.cur)) : stato.anno;
   stato.vista = 'carta';
   chiudiScheda();
   quiet.classList.add('hidden');
+  picker.classList.add('hidden');
   fermaTick();
   pulisciRacconto();
   yearCounter.classList.add('hidden');
@@ -634,7 +715,8 @@ function tornaAllaCarta() {
   eventLog.classList.add('hidden');
   returnBtn.classList.add('hidden');
   orbitPanel.classList.remove('hidden');
-  impostaAnno(stato.anno, false);
+  impostaAnno(arrivato, false);
+  aggiornaCarta();
   inquadraCasa();
 }
 
@@ -657,6 +739,7 @@ function nellaFinestra(ev) { return ev.ay >= pb.da && ev.ay <= pb.a; }
 
 function avviaRacconto() {
   stato.vista = 'racconto';
+  routesG.classList.remove('ferme');   // qui le rotte corrono, e si vedono
   pb.vel = 1;
   speedBtn.textContent = '1×';
   calcolaFinestra();
@@ -772,7 +855,7 @@ function creaEvento(ev, anima) {
 
   pb.mostrati.set(ev.id, rec);
   posizionaMarcatore(rec);
-  aggiungiRiga(ev);
+  if (stato.vista === 'racconto') aggiungiRiga(ev);   // la cronaca è del racconto
 }
 
 function rimuoviEvento(rec) {
@@ -785,6 +868,8 @@ function pulisciRacconto() {
   for (const rec of pb.mostrati.values()) rimuoviEvento(rec);
   pb.mostrati.clear();
   pb.eventi = [];
+  for (const g of grappoli) g.el.remove();
+  grappoli = [];
   logList.innerHTML = '';
 }
 
@@ -825,6 +910,74 @@ function posizionaMarcatori() {
     posizionaMarcatore(rec);
     if (rec.testa && rec.testa.style.display !== 'none') rec.testa.setAttribute('r', pxAMappa(3.5));
   }
+  raggruppaMarcatori();
+}
+
+/* ================= i grappoli =================
+ *
+ * A Roma succede tutto, e da un'Italia intera i marcatori di Roma sono lo
+ * stesso pixel: si vedeva un mucchio di cerchi sovrapposti, impossibile capire
+ * quanti fossero e impossibile sceglierne uno. Quando due o più si pestano i
+ * piedi si nascondono e al loro posto compare un gettone con il numero: toccarlo
+ * apre l'elenco di quel che c'è sotto. Ingrandendo, i grappoli si sciolgono da
+ * soli — ma i fatti che sono successi nello stesso identico luogo non si
+ * separerebbero mai, e per quelli l'elenco è l'unica strada. */
+
+const VICINI_PX = 30;                      // sotto questa distanza due gettoni si coprono
+let grappoli = [];
+
+function raggruppaMarcatori() {
+  for (const g of grappoli) g.el.remove();
+  grappoli = [];
+
+  const liberi = [];
+  for (const rec of pb.mostrati.values()) {
+    rec.el.classList.remove('ingrappolo');
+    const s = mappaASchermo(px(rec.ev.lon), py(rec.ev.lat));
+    if (s.x < -40 || s.y < -40 || s.x > window.innerWidth + 40 || s.y > window.innerHeight + 40) continue;
+    liberi.push({ rec, x: s.x, y: s.y, preso: false });
+  }
+  if (liberi.length < 2) return;
+
+  for (const a of liberi) {
+    if (a.preso) continue;
+    const insieme = [a];
+    for (const b of liberi) {
+      if (b === a || b.preso) continue;
+      if (Math.hypot(b.x - a.x, b.y - a.y) < VICINI_PX) insieme.push(b);
+    }
+    if (insieme.length < 2) continue;
+    for (const q of insieme) q.preso = true;
+    creaGrappolo(insieme);
+  }
+}
+
+function creaGrappolo(insieme) {
+  let sx = 0, sy = 0;
+  for (const q of insieme) { sx += q.x; sy += q.y; q.rec.el.classList.add('ingrappolo'); }
+  const el = document.createElement('div');
+  el.className = 'grappolo';
+  el.textContent = insieme.length;
+  el.style.left = (sx / insieme.length) + 'px';
+  el.style.top = (sy / insieme.length) + 'px';
+  const eventi = insieme.map(q => q.rec.ev).sort((a, b) => a.ay - b.ay);
+  el.title = eventi.length + ' fatti qui: ' + eventi.map(e => e.title).join(', ');
+  el.addEventListener('click', e => { e.stopPropagation(); apriElenco(eventi); });
+  overlay.appendChild(el);
+  grappoli.push({ el, eventi });
+}
+
+function apriElenco(eventi) {
+  pickerList.innerHTML = '';
+  pickerTitolo.textContent = eventi.length + ' fatti in questo punto';
+  for (const ev of eventi) {
+    const b = document.createElement('button');
+    b.innerHTML = `<span class="punto" style="background:var(--c-${ev.type})"></span>` +
+      `<span class="anno">${fmtAnno(ev.year)}</span><span>${ev.title}</span>`;
+    b.addEventListener('click', () => { picker.classList.add('hidden'); apriScheda(ev); });
+    pickerList.appendChild(b);
+  }
+  picker.classList.remove('hidden');
 }
 
 /* ---------- cronaca ---------- */
@@ -992,6 +1145,7 @@ function mostraSilenzio() {
   quiet.classList.remove('hidden');
 }
 quietClose.addEventListener('click', () => quiet.classList.add('hidden'));
+pickerClose.addEventListener('click', () => picker.classList.add('hidden'));
 
 /* ================= URL condivisibile ================= */
 
@@ -1009,8 +1163,13 @@ function daURL() {
   if (isNaN(anno)) return false;
   const lat = parseFloat(p.get('lat')), lon = parseFloat(p.get('lon'));
   impostaAnno(anno, false);
-  if (!isNaN(lat) && !isNaN(lon)) impostaDestinazione(lat, lon);
-  setTimeout(viaggia, 450);
+  /* Con un luogo si parte per il viaggio, come prima. Con il solo anno si resta
+     sulla carta, che ormai i fatti li mostra da sé: chi riceve il collegamento
+     vede subito dove guardare, e viaggia se vuole. */
+  if (!isNaN(lat) && !isNaN(lon)) {
+    impostaDestinazione(lat, lon);
+    setTimeout(viaggia, 450);
+  } else aggiornaCarta();
   return true;
 }
 
@@ -1024,6 +1183,7 @@ document.addEventListener('keydown', e => {
   } else if (e.code === 'Escape') {
     if (voxPieno) aTuttoSchermo(false);
     else if (schedaAperta) chiudiScheda();
+    else if (!picker.classList.contains('hidden')) picker.classList.add('hidden');
     else if (!quiet.classList.contains('hidden')) quiet.classList.add('hidden');
     else if (stato.vista === 'racconto') tornaAllaCarta();
   } else if ((e.code === 'ArrowLeft' || e.code === 'ArrowRight') && stato.vista === 'carta') {
@@ -1071,3 +1231,4 @@ yearField.max = -ANNO_MIN;
 travelBtn.disabled = false;
 impostaAnno(ANNO_MAX, false);
 if (!daURL()) mostraStriscione(ERAS[eraA(ANNO_MAX)]);
+aggiornaCarta();          // la carta parte già con i fatti di questi anni sopra

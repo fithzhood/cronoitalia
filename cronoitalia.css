@@ -67,6 +67,10 @@ html, body {
   stroke-linecap: round; stroke-linejoin: round;
   opacity: .9; filter: drop-shadow(0 0 4px currentColor);
 }
+/* Sulla carta le rotte stanno tutte insieme e ferme: senza il tempo che le
+   scopre una per volta erano un groviglio di fili sopra l'Italia. Restano
+   leggibili ma non gridano, e chi vuole vederle correre preme Viaggia. */
+#routes.ferme path { opacity: .35; stroke-width: 1.6; filter: none; }
 #routes circle { fill: #fff; filter: drop-shadow(0 0 5px #fff); }
 
 #vignette {
@@ -241,17 +245,36 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
 /* ---------------- striscione dell'epoca ---------------- */
 
+/* Sta in alto, sottile, e non in mezzo alla carta: mentre il tempo scorre le
+   epoche si susseguono, e una targa al centro dello schermo copriva proprio
+   quello che si era andati a guardare. Il nome per esteso resta comunque nella
+   legenda, che a ogni cambio d'epoca fa un lampo d'oro. */
 #eraBanner {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  z-index: 8; padding: 18px 26px; text-align: center; max-width: min(460px, 88vw);
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 8; padding: 7px 16px; text-align: center; max-width: min(420px, 60vw);
+  display: flex; align-items: baseline; gap: 9px; white-space: nowrap;
+  border-radius: 999px;
   pointer-events: none; animation: epoca 3.4s ease forwards;
 }
-#eraBanner h4 { margin: 0 0 6px; font-size: 21px; font-weight: 500; color: var(--oro); }
-#eraBanner p { margin: 0; font-size: 13.5px; color: var(--testo-2); }
+/* Il nome dell'epoca non si taglia mai: a stringere è la nota, che è un di più. */
+#eraBanner h4 {
+  margin: 0; font-size: 13.5px; font-weight: 600; color: var(--oro);
+  letter-spacing: .06em; flex: none;
+}
+#eraBanner p {
+  margin: 0; font-size: 11.5px; color: var(--testo-2);
+  overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto;
+}
 @keyframes epoca {
-  0% { opacity: 0; transform: translate(-50%,-46%) scale(.96); }
-  12%, 72% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%,-52%) scale(1); }
+  0% { opacity: 0; transform: translate(-50%, -8px); }
+  12%, 72% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -6px); }
+}
+#legend h2.lampo { animation: lampoEpoca 1.5s ease; }
+@keyframes lampoEpoca {
+  0% { color: var(--oro); text-shadow: none; }
+  18% { color: #ffe9b0; text-shadow: 0 0 14px rgba(216,178,90,.85); }
+  100% { color: var(--oro); text-shadow: none; }
 }
 
 /* ---------------- cronaca ---------------- */
@@ -352,6 +375,46 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 #quietList .anno { color: var(--oro); font-variant-numeric: tabular-nums; }
 #quietList small { color: var(--testo-2); }
 
+/* ---------------- grappoli e scelta ---------------- */
+
+/* Il gettone che sostituisce i marcatori sovrapposti. Ha il colore dell'oro e
+   non di un tipo di evento, perché dentro ce n'è più d'uno. */
+.grappolo {
+  position: absolute; transform: translate(-50%, -50%);
+  pointer-events: auto; cursor: pointer;
+  min-width: 28px; height: 28px; padding: 0 6px; border-radius: 999px;
+  display: grid; place-items: center;
+  background: rgba(10,16,26,.9); color: var(--oro);
+  border: 1.5px solid currentColor;
+  box-shadow: 0 0 10px rgba(216,178,90,.55), 0 2px 6px rgba(0,0,0,.5);
+  font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums;
+  transition: transform .18s ease;
+}
+.grappolo:hover { transform: translate(-50%, -50%) scale(1.18); z-index: 3; }
+.evt.ingrappolo { display: none; }
+
+#picker {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%);
+  z-index: 7; width: min(420px, calc(100vw - 32px)); padding: 14px 16px;
+  background: var(--pannello); border: 1px solid var(--bordo); border-radius: 14px;
+  backdrop-filter: blur(9px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+}
+#pickerTitolo { margin: 0 26px 8px 0; font-size: 15px; color: var(--oro); font-weight: 600; }
+#pickerClose {
+  position: absolute; top: 8px; right: 10px; padding: 2px 9px; font-size: 19px;
+  line-height: 1.2; border-radius: 8px;
+}
+#pickerList { display: flex; flex-direction: column; gap: 5px; max-height: 46vh; overflow-y: auto; }
+#pickerList button {
+  display: flex; align-items: baseline; gap: 8px; text-align: left;
+  font-weight: 400; font-size: 13.5px; color: var(--testo);
+}
+#pickerList .punto { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+#pickerList .anno { color: var(--oro); font-variant-numeric: tabular-nums; flex: none; }
+#pickerList::-webkit-scrollbar { width: 7px; }
+#pickerList::-webkit-scrollbar-thumb { background: rgba(216,178,90,.25); border-radius: 4px; }
+
 /* ---------------- effetto salto ---------------- */
 
 #jumpFx { position: fixed; inset: 0; z-index: 10; pointer-events: none; opacity: 0; background: #fff; }
@@ -380,8 +443,10 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   #orbitPanel, #playbackPanel { bottom: 10px; }
   #orbitPanel #hint { margin-bottom: 6px; }
   #quiet { bottom: 78px; }
-  #eraBanner { max-width: 92vw; padding: 14px 18px; }
-  #eraBanner h4 { font-size: 18px; }
+  /* fra legenda (a sinistra) e contatore (a destra) resta poco: solo il nome */
+  #eraBanner { top: 8px; max-width: 40vw; padding: 5px 12px; }
+  #eraBanner h4 { font-size: 12px; }
+  #eraBanner p { display: none; }
   #cardVox { height: 170px; }
 }
 
