@@ -329,14 +329,24 @@ function interno(m, larg, alt, prof, cMuro, cSoffitto, cSuolo) {
 }
 
 /* Piazza lastricata con edifici staccati tutt'intorno: se si chiude l'anello
-   la piazza sparisce e resta una massa di mattoni. */
+   la piazza sparisce e resta una massa di mattoni.
+ *
+ * Le case stanno appoggiate al bordo del plastico e restano basse, e non è un
+ * dettaglio: in mezzo alla piazza ci va sempre una folla, e una folla di
+ * `folla()` arriva a sei blocchi e mezzo dal centro. Con l'anello a quattro
+ * blocchi dal bordo e le case alte fino a nove, metà dei figuranti finiva
+ * dentro le case o dietro un muro che da questa camera copre otto blocchi di
+ * selciato: la piazza si vedeva piena di tetti e vuota di gente. L'altezza si
+ * limita anche a chi ne chiede di più, perché è il difetto che si voleva
+ * togliere da tutte le scene insieme. */
 function piazza(m, R, rng, cMuro, cTetto, alt) {
   suolo(m, R, P.pietraChiara, P.terra, rng);
   const posti = [];
-  for (let k = 0; k < 6; k++) { posti.push([-R + 1 + k * 3, -R + 1]); posti.push([-R + 1 + k * 3, R - 4]); }
-  for (let k = 0; k < 3; k++) { posti.push([-R + 1, -R + 5 + k * 4]); posti.push([R - 4, -R + 5 + k * 4]); }
+  for (let k = 0; k < 6; k++) { posti.push([-R + 1 + k * 3, -R + 1]); posti.push([-R + 1 + k * 3, R - 3]); }
+  for (let k = 0; k < 3; k++) { posti.push([-R + 1, -R + 5 + k * 4]); posti.push([R - 3, -R + 5 + k * 4]); }
   for (let i = 0; i < posti.length; i++)
-    casa(m, posti[i][0], posti[i][1], 3, 3, (alt || 3) + (i % 3), i % 2 ? cMuro : P.tela, cTetto || P.tetto, 1);
+    casa(m, posti[i][0], posti[i][1], 3, 3, Math.min(alt || 3, 4) + (i % 2),
+      i % 2 ? cMuro : P.tela, cTetto || P.tetto, 1);
   return posti;
 }
 
@@ -2010,6 +2020,376 @@ function initRenderer(canvas) {
   matStatica = new THREE.MeshLambertMaterial({ vertexColors: true });
 }
 
+/* ---------------- lo scoperchiamento ----------------
+ *
+ * Un plastico si guarda da trenta gradi d'elevazione, e la camera gli gira
+ * lentamente intorno. Le scene però erano costruite come edifici veri, con il
+ * loro coperchio: a scheda aperta si vedeva il coperchio, e sotto succedeva
+ * tutto quello che nessuno vedeva mai.
+ *
+ * Qui, dopo che la scena ha posato i suoi blocchi fermi, si toglie quel che
+ * SEPPELLISCE l'azione — e soltanto quello.
+ *
+ * Sepolto non vuol dire nascosto una volta. Da un giro di camera ogni cosa
+ * finisce dietro qualcos'altro per un pezzo del giro: è la vita di un plastico,
+ * e un palazzo che copre la piazza per un quarto di giro non è un difetto. È
+ * sepolto quel che resta invisibile da quasi tutti gli angoli, e allora vuol
+ * dire che è chiuso dentro: una stanza, un tamburo, un cortile, un tetto.
+ *
+ * Da qui la differenza fra il Duomo di Milano e un refettorio. Nel Duomo
+ * l'azione sono le guglie che spuntano sul tetto — non è sepolto niente, e il
+ * Duomo resta intero. Nel refettorio l'azione sta sotto il solaio, da qualunque
+ * parte si guardi: e allora il solaio se ne va.
+ *
+ * Quel che si toglie, si toglie per intero e in modo che regga:
+ *   - una COPERTURA (distesa larga almeno tre celle per lato, col vuoto sotto)
+ *     va via tutta, non a buchi: un tetto bucherellato è peggio di un tetto.
+ *     Le strisce larghe una cella no: sono ponti, acquedotti, cornicioni.
+ *   - un MURO si abbassa fino a sotto il punto che nascondeva, tagliando tutto
+ *     il giro alla stessa quota, così resta una cinta bassa e non un dente.
+ *     Le cose sottili (torri, campanili, colonne, alberi, alberi di nave) non
+ *     si toccano mai: nascondono una striscia di niente.
+ *   - quel che resta appeso al vuoto scende con il resto.
+ *
+ * Chi il coperchio lo vuole tenere perché il coperchio È il monumento — la
+ * cupola del Pantheon, la volta della Sistina — scrive `coperchio: true` nella
+ * scena, e allora l'azione va portata fuori a mano, sul sagrato.
+ */
+
+const LARGO = 3;             // da quante celle per lato una distesa è copertura
+const SOTTILE = 3;           // fin qui è una torre, non un muro
+const OPACO = .6;            // sotto questo lato il blocco è decorazione
+const SEPOLTO = .6;          // da quanta parte del giro si deve sparire
+const QUORUM = .12;          // quanta azione dev'essere sepolta perché sia un difetto
+const COLPA = .05;           // quanta ne deve seppellire una struttura per cadere
+const GIRI = 4;              // quante volte si riprova dopo aver tolto qualcosa
+const RESA = .55;            // oltre questa quota di plastico demolito ci si ferma
+const ELEVAZIONE = .61;      // l'elevazione del giro di camera
+const PASSO = .34;           // il passo del raggio, in blocchi
+
+function chiaveCella(x, y, z) { return ((x + 128) * 256 + (y + 128)) * 256 + (z + 128); }
+function chiaveCol(x, z) { return (x + 128) * 256 + (z + 128); }
+
+/* Dove succede qualcosa: i blocchi in movimento campionati lungo il ciclo.
+   Non basta un istante solo — mezze scene arrivano un pezzo per volta, e a t=0
+   il plastico è ancora vuoto. I cubetti piccoli non contano: sono scintille,
+   coriandoli, e soprattutto sono i pezzi a metà della loro discesa, che passano
+   per posizioni dove non staranno mai. */
+const ISTANTI = [.6, 1.9, 3.4, 5.7, 8.3];
+function azioneDi(sc) {
+  const v = [];
+  if (!sc.dinamici) return v;
+  const orologioPrec = orologio;
+  for (let k = 0; k < ISTANTI.length; k++) {
+    const t = ISTANTI[k];
+    orologio = t;
+    try {
+      sc.dinamici((x, y, z, s) => {
+        if ((s == null ? 1 : s) > .45 && Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z))
+          v.push(x, y, z, k);          // l'istante serve a distinguere chi posa da chi passa
+      }, t, null);
+    } catch (err) { /* una scena che esplode la prende lo smoke test, non questa */ }
+  }
+  orologio = orologioPrec;
+  return v;
+}
+
+/* Il banco di prova lo spegne per confrontare il prima e il dopo; nell'app
+   resta sempre acceso. */
+let scoperchiamento = true;
+
+function scoperchia(blocchi, azione, sc) {
+  if (!scoperchiamento || (sc && sc.coperchio) || !azione.length) return blocchi;
+
+  /* le celle piene, con dentro gli indici dei blocchi che ci stanno */
+  const celle = new Map();
+  let fondoMondo = Infinity, cimaMondo = -Infinity;
+  let x0M = Infinity, x1M = -Infinity, z0M = Infinity, z1M = -Infinity;
+  for (let i = 0; i < blocchi.length; i++) {
+    const b = blocchi[i];
+    if ((b.s || 1) < OPACO) continue;
+    const x = Math.round(b.x), y = Math.round(b.y), z = Math.round(b.z);
+    const k = chiaveCella(x, y, z);
+    let c = celle.get(k);
+    if (!c) celle.set(k, c = { x, y, z, chi: [] });
+    c.chi.push(i);
+    if (y < fondoMondo) fondoMondo = y;
+    if (y > cimaMondo) cimaMondo = y;
+    if (x < x0M) x0M = x; if (x > x1M) x1M = x;
+    if (z < z0M) z0M = z; if (z > z1M) z1M = z;
+  }
+  if (!celle.size) return blocchi;
+
+  const vive = new Set(celle.values());          // quel che è ancora in piedi
+  const via = new Set();                         // gli indici dei blocchi tolti
+  const totale = vive.size;
+  const cella = (x, y, z) => {
+    const c = celle.get(chiaveCella(x, y, z));
+    return c && vive.has(c) ? c : null;
+  };
+
+  /* Gli angoli da cui si guarda. Il giro automatico fa il giro tondo; le scene
+     con un fronte oscillano davanti al loro muro, e lì il retro non conta. */
+  const angoli = sc && sc.fronte != null
+    ? [-.62, -.31, 0, .31, .62].map(a => sc.fronte + a)
+    : [0, 1, 2, 3, 4, 5].map(i => -0.9 + i * Math.PI / 3);
+  const versi = angoli.map(a => {
+    const oriz = Math.cos(ELEVAZIONE);
+    return [Math.cos(a) * oriz, Math.sin(ELEVAZIONE), Math.sin(a) * oriz];
+  });
+
+  /* Il primo ostacolo fra un punto e la camera, o niente se la strada è libera.
+     Si parte staccati di mezzo blocco per non inciampare in se stessi, e si
+     smette appena si esce dal plastico: oltre il bordo non c'è più niente che
+     possa coprire. */
+  function ostacolo(x, y, z, v) {
+    for (let s = .7; s < 60; s += PASSO) {
+      const cx = Math.round(x + v[0] * s), cy = Math.round(y + v[1] * s), cz = Math.round(z + v[2] * s);
+      if (cy > cimaMondo || cx < x0M - 1 || cx > x1M + 1 || cz < z0M - 1 || cz > z1M + 1) return null;
+      const c = cella(cx, cy, cz);
+      if (c) return c;
+    }
+    return null;
+  }
+
+  /* I punti dell'azione, sfoltiti: due figure nella stessa cella raccontano la
+     stessa cosa, e i raggi costano. */
+  const punti = [];
+  const gia = new Set();
+  for (let i = 0; i < azione.length; i += 4) {
+    const k = chiaveCella(Math.round(azione[i]), Math.round(azione[i + 1]), Math.round(azione[i + 2]));
+    if (gia.has(k)) continue;
+    gia.add(k);
+    punti.push(azione[i], azione[i + 1], azione[i + 2]);
+  }
+
+  /* Quel che REGGE l'azione non si tocca, mai.
+   *
+   * Il tetto del Duomo di Milano porta le guglie che spuntano una per volta:
+   * toglierlo perché nascondeva la folla lasciava le guglie sospese a mezz'aria
+   * sopra un plastico raso al suolo. Vale per ogni palco, ponteggio, coperta di
+   * nave, ballatoio: se qualcosa ci sta sopra, l'appoggio resta — e se dentro
+   * c'è gente che non si vede, va spostata fuori a mano.
+   *
+   * Sopraelevato per davvero: stare su un selciato o sul primo gradino non fa
+   * di un muro un pilastro. E poggiare non è passare sopra: una nota che sale
+   * in spirale sorvola il solaio in un istante e non c'è più, mentre le guglie
+   * del Duomo su quel punto ci stanno sempre. */
+  const protette = new Set();
+  {
+    const alto = c => c.y >= fondoMondo + 3;
+    const quando = new Map();
+    for (let i = 0; i < azione.length; i += 4) {
+      // la cella su cui poserebbe: un blocco sotto il blocco
+      const c = cella(Math.round(azione[i]), Math.round(azione[i + 1] - 1), Math.round(azione[i + 2]));
+      if (!c || !alto(c)) continue;
+      let s = quando.get(c);
+      if (!s) quando.set(c, s = new Set());
+      s.add(azione[i + 3]);
+    }
+    /* Si protegge il punto d'appoggio, non tutto l'edificio: bastava il fumo di
+       una ciminiera per dichiarare intoccabile un capannone intero, e il
+       capannone era proprio il coperchio da togliere. Che l'appoggio resti in
+       piedi lo garantisce il controllo dopo la demolizione: se resterebbe per
+       aria, la demolizione si annulla. */
+    for (const [c, s] of quando) if (s.size >= 3) protette.add(c);
+  }
+
+  /* Le coperture, calcolate una volta: a quale distesa appartiene ogni cella.
+     Si ricalcolano a ogni giro perché togliendo un tetto ne può spuntare un
+     altro sotto (il solaio sotto le tegole). */
+  function coperture() {
+    const di = new Map();                        // cella → distesa
+    const cand = new Set();
+    for (const c of vive) if (c.y >= fondoMondo + 3 && !cella(c.x, c.y - 1, c.z)) cand.add(c);
+    const visti = new Set();
+    for (const inizio of cand) {
+      if (visti.has(inizio)) continue;
+      // la falda è a gradini: si sale di un blocco per volta, quindi i vicini
+      // valgono anche a quota diversa di uno
+      const gruppo = [], coda = [inizio];
+      visti.add(inizio);
+      while (coda.length) {
+        const c = coda.pop();
+        gruppo.push(c);
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]])
+          for (let dy = -1; dy <= 1; dy++) {
+            const v = cella(c.x + dx, c.y + dy, c.z + dz);
+            if (v && cand.has(v) && !visti.has(v)) { visti.add(v); coda.push(v); }
+          }
+      }
+      let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      for (const c of gruppo) {
+        if (c.x < x0) x0 = c.x; if (c.x > x1) x1 = c.x;
+        if (c.z < z0) z0 = c.z; if (c.z > z1) z1 = c.z;
+      }
+      // una striscia larga una cella è un ponte, un acquedotto, un cornicione:
+      // non copre niente e va lasciata dov'è
+      if (Math.min(x1 - x0 + 1, z1 - z0 + 1) < LARGO) continue;
+      for (const c of gruppo) di.set(c, gruppo);
+    }
+    return di;
+  }
+
+  /* Il muro a cui appartiene una cella, alla sua quota: il giro completo, così
+     si abbassa tutta la cinta e non si apre una feritoia. */
+  function muroDi(c) {
+    const gruppo = [], coda = [c], visti = new Set([c]);
+    while (coda.length) {
+      const q = coda.pop();
+      gruppo.push(q);
+      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const v = cella(q.x + dx, c.y, q.z + dz);
+        if (v && !visti.has(v)) { visti.add(v); coda.push(v); }
+      }
+    }
+    return gruppo;
+  }
+
+  const inPiedi = () => inPiediDa(vive, cella, fondoMondo);
+
+  const abbatti = celleDaTogliere => {
+    for (const c of celleDaTogliere) {
+      if (!vive.has(c)) continue;
+      vive.delete(c);
+      for (const i of c.chi) via.add(i);
+    }
+  };
+
+  const quantiPunti = punti.length / 3;
+  for (let giro = 0; giro < GIRI; giro++) {
+    const tetti = coperture();
+    /* Quanta azione seppellisce ciascuno. Un blocco che nasconde una figura
+       sola non è un coperchio: è la parallasse, e in un plastico ci sta. Si
+       conta una volta per figura, non una per angolo, se no un muro che ne
+       nasconde una da sei angoli sembrerebbe peggio di un tetto che ne
+       nasconde sei da uno. */
+    const colpe = new Map();
+    let sepolti = 0;
+    for (let i = 0; i < punti.length; i += 3) {
+      const x = punti[i], y = punti[i + 1], z = punti[i + 2];
+      let nascosto = 0;
+      const chi = new Set();
+      for (const v of versi) {
+        const c = ostacolo(x, y, z, v);
+        if (c) { nascosto++; chi.add(c); }
+      }
+      if (nascosto / versi.length < SEPOLTO) continue;   // si vede: non si tocca niente
+      sepolti++;
+      for (const c of chi) colpe.set(c, (colpe.get(c) || 0) + 1);
+    }
+    // se è sepolto un figurante ogni tanto, la scena non ha un coperchio di troppo
+    if (!colpe.size || sepolti < Math.max(2, quantiPunti * QUORUM)) break;
+
+    const soglia = Math.max(2, quantiPunti * COLPA);
+    const pesa = gruppo => {
+      let n = 0;
+      for (const q of gruppo) {
+        if (protette.has(q)) return -1;      // regge qualcosa: l'edificio resta intero
+        n += colpe.get(q) || 0;
+      }
+      return n;
+    };
+    /* Quel che cade con un gruppo: il gruppo e tutto quel che gli sta sopra,
+       perché senza appoggio non resterebbe comunque in piedi. Se in mezzo
+       compare qualcosa di protetto, non cade niente: si preferisce una scena
+       che nasconde a un monumento decapitato. */
+    const cadrebbe = gruppo => {
+      const giù = new Set();
+      for (const q of gruppo) {
+        if (protette.has(q)) return null;
+        giù.add(q);
+        for (let y = q.y + 1; y <= cimaMondo; y++) {
+          const su = cella(q.x, y, q.z);
+          if (!su) continue;
+          if (protette.has(su)) return null;
+          giù.add(su);
+        }
+      }
+      return giù;
+    };
+
+    const condanna = new Set();
+    for (const c of colpe.keys()) {
+      if (c.y <= fondoMondo + 1) continue;               // il piano di posa non si tocca
+      const tetto = tetti.get(c);
+      let gruppo;
+      if (tetto) {
+        if (pesa(tetto) < soglia) continue;
+        gruppo = tetto;
+      } else {
+        const muro = muroDi(c);
+        let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+        for (const q of muro) {
+          if (q.x < x0) x0 = q.x; if (q.x > x1) x1 = q.x;
+          if (q.z < z0) z0 = q.z; if (q.z > z1) z1 = q.z;
+        }
+        // sottile in tutt'e due i versi: torre, fusto, chioma, albero di nave
+        if (Math.max(x1 - x0 + 1, z1 - z0 + 1) <= SOTTILE) continue;
+        if (pesa(muro) < soglia) continue;
+        gruppo = muro;
+      }
+      const giù = cadrebbe(gruppo);
+      if (!giù) continue;
+      for (const q of giù) condanna.add(q);
+    }
+    if (!condanna.size) break;
+    /* Se per far vedere l'azione bisogna radere al suolo mezzo plastico, non è
+       un coperchio di troppo: è una scena da rifare a mano. Meglio lasciarla
+       com'è e lasciare che il controllo la segnali. */
+    if ((totale - vive.size + condanna.size) / totale > RESA) break;
+    abbatti(condanna);
+
+    /* E se dopo la demolizione un appoggio è rimasto per aria, si rimette tutto
+       com'era: meglio una scena che nasconde di un plastico dove le guglie
+       galleggiano sopra il vuoto. */
+    let regge = true;
+    for (const p of protette) if (!inPiedi().has(p)) { regge = false; break; }
+    if (!regge) {
+      for (const c of condanna) {
+        vive.add(c);
+        for (const i of c.chi) via.delete(i);
+      }
+      break;
+    }
+  }
+
+  if (!via.size) return blocchi;
+
+  /* Quel che resta appeso al niente scende con il resto. Togliendo una cupola o
+     una falda, i pezzi che poggiavano solo su quelle restavano sospesi a
+     mezz'aria. */
+  const su = inPiedi();
+  for (const c of vive) if (!su.has(c)) for (const i of c.chi) via.add(i);
+
+  return blocchi.filter((b, i) => !via.has(i));
+}
+
+/* Chi sta in piedi: si parte dal piano di posa e si sale per contatto, anche in
+   diagonale, che è come sono costruiti questi plastici. */
+function inPiediDa(vive, cella, fondoMondo) {
+  const radici = [];
+  for (const c of vive) if (c.y <= fondoMondo + 1) radici.push(c);
+  const dentro = new Set(radici);
+  while (radici.length) {
+    const c = radici.pop();
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+      if (!dx && !dy && !dz) continue;
+      const v = cella(c.x + dx, c.y + dy, c.z + dz);
+      if (v && !dentro.has(v)) { dentro.add(v); radici.push(v); }
+    }
+  }
+  return dentro;
+}
+
+/* Il mondo fermo di una scena, già scoperchiato: lo usano la scheda, il banco
+   di prova e i controlli, così guardano tutti lo stesso plastico. */
+function mondoDi(sc) {
+  const m = new Mondo();
+  if (sc.statici) sc.statici(m, null);
+  return scoperchia(m.b, azioneDi(sc), sc);
+}
+
 /* I blocchi fermi diventano una geometria sola: un disegno, non mille oggetti. */
 function costruisciStatica(blocchi) {
   const bp = geoCubo.attributes.position.array;
@@ -2234,9 +2614,7 @@ function play(canvas, ev) {
   if (meshStatica) { scena.remove(meshStatica); meshStatica.geometry.dispose(); meshStatica = null; }
   pulisciDinamici();
 
-  const m = new Mondo();
-  if (scenaCorr.statici) scenaCorr.statici(m, null);
-  meshStatica = costruisciStatica(m.b);
+  meshStatica = costruisciStatica(mondoDi(scenaCorr));
   scena.add(meshStatica);
 
   misura();
@@ -2332,6 +2710,9 @@ const kit = {
 // node): dentro l'app ci pensa `disegnaFrame`.
 function tempo(t) { orologio = t; }
 
-return { play, stop, smoke, ridimensiona, registra, istante, bordo, tempo, P, kit, FIRMA, TIPO };
+// Solo per il banco di prova: rimette il coperchio, per vedere il prima e il dopo.
+function grezzo(v) { scoperchiamento = !v; }
+
+return { play, stop, smoke, ridimensiona, registra, istante, bordo, tempo, mondoDi, grezzo, P, kit, FIRMA, TIPO };
 
 })();

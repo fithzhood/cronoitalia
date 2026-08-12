@@ -2563,9 +2563,11 @@ cinecitta(rng) {
     cielo: TRAMONTO, nebbia: 0x3a3028, raggio: FUOCOLUCE, ambiente: .55,
     statici(m) {
       suolo(m, 12, P.pietraChiara, P.terra, rng);
+      // due file di palazzi più bassi e più larghe: si spara dai balconi sulla
+      // strada, e la strada dev'essere in vista
       for (let i = 0; i < 8; i++) {
-        const x = -11 + (i % 4) * 6, z = i < 4 ? -9 : 5;
-        casa(m, x, z, 5, 4, 6, P.cotto, P.tetto, 1);
+        const x = -11 + (i % 4) * 6, z = i < 4 ? -10 : 6;
+        casa(m, x, z, 5, 4, 4, P.cotto, P.tetto, 1);
       }
       for (let x = -12; x <= 12; x++) for (let z = -2; z <= 2; z++) m.p(x, 1, z, P.pietra);
     },

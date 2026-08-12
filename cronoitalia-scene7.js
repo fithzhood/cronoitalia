@@ -508,7 +508,9 @@ cefalonia(rng) {
 },
 
 ardeatine(rng) {
-  return { cielo: CUPO, nebbia: 0x26282c, raggio: 0xa8a094, ambiente: .4,
+  // la cava ha una faccia sola, e va guardata da lì: senza `fronte` la scheda
+  // si apriva sul retro del costone, cioè su un muro di roccia
+  return { cielo: CUPO, nebbia: 0x26282c, raggio: 0xa8a094, ambiente: .4, fronte: Math.PI / 2,
     statici(m) {
       suolo(m, 12, P.terraScura, P.terra, rng, .8);
       for (let x = -4; x <= 4; x++) for (let y = 1; y <= 4; y++) m.p(x, y, -6, P.roccia);
@@ -658,7 +660,9 @@ polesine(rng) {
 
 irpinia(rng) {
   return { cielo: CUPO, nebbia: 0x2e2c2a, raggio: 0xc0b8a0, ambiente: .5,
-    statici(m) { collina(m, 12, 5, P.erbaScura, P.erba); },
+    // terreno appena mosso, non una cupola: le case di `crolla` si posano tutte
+    // a y=1, e su una collina alta cinque il paese finiva sepolto nel pendio
+    statici(m) { suolo(m, 12, P.erbaScura, P.terra, rng, 1); },
     dinamici(d, t) {
       /* Novanta secondi, e trecentomila senza casa. La ricostruzione diventerà
          un caso di studio su come non si spende il denaro pubblico. */

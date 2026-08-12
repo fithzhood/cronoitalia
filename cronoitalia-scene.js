@@ -729,7 +729,12 @@ archimede(rng) {
 /* ==================== impero e tardo antico ==================== */
 
 pantheon(rng) {
+  /* La cupola è il monumento: non si scoperchia, si gira intorno. E allora
+     quel che succede va portato fuori — prima la folla stava dentro il tamburo
+     e il fascio di luce cadeva su un pavimento che nessuno poteva vedere. Ora
+     la luce esce dall'oculo verso il cielo e la gente sta sul sagrato. */
   return {
+    coperchio: true,
     cielo: GIORNO, raggio: CALDO,
     statici(m) {
       suolo(m, 11, P.pietraChiara, P.pietra, rng);
@@ -753,13 +758,17 @@ pantheon(rng) {
       for (let x = -4; x <= 4; x++) m.p(x, 8, 9, P.marmoOmbra);
     },
     dinamici(d, t) {
-      // il fascio di luce dall'oculo che spazza il pavimento
+      // il fascio che esce dall'oculo e si piega piano, come l'ora del giorno
       const a = t * .25;
-      for (let i = 0; i < 14; i++) {
-        const p = i / 14;
-        d(Math.cos(a) * p * 4, 13 - p * 11.5, Math.sin(a) * p * 4, 1.1 - p * .5, P.oro);
+      for (let i = 0; i < 12; i++) {
+        const p = i / 12;
+        d(Math.cos(a) * p * 3.2, 13.6 + p * 6, Math.sin(a) * p * 3.2, 1.1 - p * .7, P.oro);
       }
-      folla(d, t, 0, 6, 8, 1.4, [P.tela, P.viola], 1.2);
+      // i visitatori sul sagrato, davanti al pronao
+      for (let i = 0; i < 9; i++) {
+        const x = -4.4 + i * 1.1, on = Math.abs(Math.sin(t * 2.2 + i)) * .22;
+        omino(d, x, 1.2 + on, 10.6 + (i % 2) * .9, i % 3 ? P.tela : P.viola, P.pelle, .8);
+      }
     },
   };
 },
@@ -2568,7 +2577,9 @@ chioggia(rng) {
       m.guscio(-6, 1, -6, 13, 9, 13, P.marmo);
       for (let x = -6; x <= 6; x++) for (let z = -6; z <= 6; z++)
         if ((x + z) % 2 === 0) m.p(x, 10, z, P.marmoOmbra);
-      for (let i = 0; i < 6; i++) casa(m, -11 + i * 5, 9, 3, 2, 2, P.cotto, P.tetto, 1);
+      // le case di contorno dietro la fabbrica: davanti tolgono la vista del
+      // naviglio che porta il marmo di Candoglia, e quello è mezzo racconto
+      for (let i = 0; i < 6; i++) casa(m, -11 + i * 5, -11, 3, 2, 2, P.cotto, P.tetto, 1);
     },
     dinamici(d, t) {
       /* La fabbrica del Duomo: le guglie spuntano una dopo l'altra e non
@@ -2590,7 +2601,11 @@ chioggia(rng) {
         const p = ((t * .5 + i * 3) % 23) - 11.5;
         d(p, 1.4, 11, .8, P.marmo);
       }
-      folla(d, t, 0, 5, 10, 1.6, [P.tela, P.nero], 1.2);            // la folla sta in piazza
+      /* La folla sta in piazza per davvero: prima era centrata a z=5, cioè
+         dentro la fabbrica del Duomo, e non la vedeva nessuno. */
+      for (let i = 0; i < 10; i++)
+        omino(d, -5.4 + i * 1.2, 1.2 + Math.abs(Math.sin(t * 2.1 + i)) * .18, 8 + (i % 2) * .8,
+          i % 2 ? P.tela : P.nero, P.pelle, .8);
     },
   };
 },

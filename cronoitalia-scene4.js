@@ -164,19 +164,29 @@ tagliacozzo(rng) {
 
 'caterina-sforza'(rng) {
   return { cielo: CUPO, raggio: FUOCO,
-    statici(m) { campo(m, 12, rng); mura(m, -4, -4, 9, 9, 6, P.pietraChiara); torre(m, -5, -5, 10, P.pietraChiara); },
+    /* La rocca ha tre lati di muro e non quattro: il quarto, quello che prende
+       le cannonate, lo disegna l'animazione. Con `mura` intero il muro statico
+       restava in piedi dietro quello che si sbriciolava, e la breccia — che è
+       tutta la scena — non si apriva mai. */
+    statici(m) {
+      campo(m, 12, rng);
+      for (let x = -4; x <= 4; x++) for (const z of [-4, 4]) for (let y = 1; y <= 5; y++) m.p(x, y, z, P.pietraChiara);
+      for (let z = -3; z <= 3; z++) for (let y = 1; y <= 5; y++) m.p(4, y, z, P.pietraChiara);
+      torre(m, -6, -6, 9, P.pietraChiara);
+    },
     dinamici(d, t) {
       /* Sola sulle mura, con l'artiglieria di Cesare Borgia sotto: resiste
          settimane, e si arrende solo quando la breccia è dentro. */
       const f = (t * .09) % 1;
-      omino(d, -4.5, 8.4, 0, P.rosso, P.pelle, .95);
+      omino(d, -5.5, 10.4, -5.5, P.rosso, P.pelle, .95);      // in cima al torrione
       for (let k = 0; k < 4; k++) {
         const g = ((t * .5 + k * .25) % 1);
         d(-11 + g * 7, 3 + Math.sin(g * Math.PI) * 4, -4 + k * 3, .9, P.roccia);
       }
       const breccia = clamp01((f - .5) * 2.2);
-      for (let z = -3; z <= 2; z++) for (let y = 1; y <= 6 - breccia * 6; y++) d(-4, y, z, 1, P.pietraChiara);
-      for (let i = 0; i < 12; i++) omino(d, -11 + (i % 6) * 1.4, 1.6, -5 + Math.floor(i / 6) * 3, P.viola, P.pelle, .8);
+      for (let z = -3; z <= 3; z++) for (let y = 1; y <= 5 - breccia * 5; y++) d(-4, y, z, 1, P.pietraChiara);
+      // gli assedianti stanno fuori dalla rocca: prima metà fila era dentro le mura
+      for (let i = 0; i < 12; i++) omino(d, -11 + (i % 6) * 1.2, 1.6, -8 + Math.floor(i / 6) * 2.4, P.viola, P.pelle, .8);
       polverone(d, t, 10, -4, 1.6);
     } };
 },
@@ -608,7 +618,9 @@ mario(rng) {
 
 'guerra-sociale'(rng) {
   return { cielo: TRAMONTO, raggio: FUOCO,
-    statici(m) { campo(m, 12, rng, 1); mura(m, -4, -5, 9, 9, 5, P.pietraChiara); },
+    // la cinta della capitale nuova sta in fondo: prima era in mezzo al campo,
+    // e la fila dei cittadini con la cittadinanza in mano ci finiva dentro
+    statici(m) { campo(m, 12, rng, 1); mura(m, -4, -12, 9, 7, 4, P.pietraChiara); },
     dinamici(d, t) {
       /* Gli alleati si ribellano per ottenere la cittadinanza e fondano una
          loro capitale: perdono la guerra e ottengono la cittadinanza. */
@@ -622,7 +634,7 @@ mario(rng) {
           if (p > .3) d(-9 + (i % 10) * 2, 3.2, -4 + Math.floor(i / 10) * 2.4, .35, P.oro);
         }
       }
-      bandiera(d, t, 0, 6.4, -5, 2, guerra ? [P.marrone, P.marrone] : [P.rosso, P.oro], 0);
+      bandiera(d, t, 0, 5.4, -6, 2, guerra ? [P.marrone, P.marrone] : [P.rosso, P.oro], 0);
       polverone(d, t, guerra ? 12 : 4);
     } };
 },
@@ -1348,7 +1360,8 @@ gap(rng) {
         const g = ((t * 3 + i * .1) % 1);
         d(Math.cos(i * 2.2) * g * 5, 1.6 + g * 2, 3 + Math.sin(i * 2.2) * g * 4, .6 * (1 - g), P.fuoco);
       }
-      for (let i = 0; i < 8; i++) omino(d, -8 + i * 2.4, 1.4, 8, P.tela, P.pelle, .72);
+      // la gente che passa resta in piazza: a z=8 stava dentro le case del bordo
+      for (let i = 0; i < 8; i++) omino(d, -8 + i * 2.4, 1.4, 6, P.tela, P.pelle, .72);
     } };
 },
 

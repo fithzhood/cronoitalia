@@ -315,8 +315,10 @@ masaniello(rng) {
     cielo: TRAMONTO, raggio: FUOCOLUCE,
     statici(m) {
       suolo(m, 12, P.pietraChiara, P.terra, rng);
+      // le due file di case ai bordi opposti: la seconda stava a z=3, dove la
+      // folla arriva, e mezza Napoli restava chiusa in casa
       for (let i = 0; i < 8; i++)
-        casa(m, -11 + (i % 4) * 6, -9 + Math.floor(i / 4) * 12, 4, 4, 4, P.tela, P.tetto, 1);
+        casa(m, -11 + (i % 4) * 6, -9 + Math.floor(i / 4) * 18, 4, 4, 4, P.tela, P.tetto, 1);
       m.box(-3, 1, -3, 7, 2, 6, P.pietra);
     },
     dinamici(d, t) {
@@ -721,7 +723,9 @@ fiat(rng) {
     cielo: 0x2a3040, nebbia: 0x38404e, raggio: 0xffe4b8,
     statici(m) {
       suolo(m, 12, P.pietraChiara, P.terra, rng);
-      fabbrica(m, -10, -8, 20, 8, 6, P.cotto, 3);
+      // capannone basso: con i muri a sei la catena di montaggio, che è tutta
+      // la scena, restava dietro un muro da qualunque parte si guardasse
+      fabbrica(m, -10, -8, 20, 8, 4, P.cotto, 3);
       for (let x = -12; x <= 12; x++) m.p(x, 1, 6, P.grigio);
     },
     dinamici(d, t) {
@@ -849,7 +853,8 @@ boom(rng) {
         const x = -11 + i * 4;
         for (let k = 0; k < 2; k++) {
           const z = k ? 6 : -8;
-          for (let y = 0; y < 6 + (i % 3); y++)
+          // palazzi bassi: a otto piani il corso restava in ombra da ogni angolo
+          for (let y = 0; y < 4 + (i % 2); y++)
             for (let dx = 0; dx < 3; dx++) for (let dz = 0; dz < 3; dz++)
               m.p(x + dx, 2 + y, z + dz, (dx + dz + y) % 4 === 0 ? P.acquaChiara : P.tela);
         }

@@ -57,7 +57,9 @@ con rotazione a trascinamento, URL condivisibile, disposizione su telefono
 | `node tools/check-colori.js` | Nessuna coppia di stati **confinanti** con colori confondibili |
 | `node tools/check-scene.js` | Colori inesistenti nelle scene, scene senza evento, copertura |
 | `node tools/check-anim.js [--tutte\|<id>]` | Come si **muovono** le scene: chi esce dalla piastra, chi non si muove, chi sfarfalla |
-| `tools/prova-scene.html` | Banco di prova: apre una scena qualsiasi, ferma il tempo, disegna il bordo della piastra |
+| `node tools/check-vista.js [--tutte\|--tolti\|<id>]` | Se la scena si **lascia vedere**: quanto movimento resta dietro tetti, muri e rilievi. `--tolti` dice cosa si porta via lo scoperchiamento |
+| `tools/prova-scene.html` | Banco di prova: apre una scena qualsiasi, ferma il tempo, disegna il bordo della piastra, **rimette il coperchio** per il confronto |
+| `sh tools/scatta.sh <id> [t] [coperchio]` | Uno scatto della scena da riga di comando (Chrome headless), in `tools/scatti/` |
 | `VoxScena.smoke()` in console | Costruisce tutte le scene a più istanti e riporta gli errori |
 
 **Falli girare tutti dopo ogni modifica ai dati o alle scene.** Hanno già trovato
@@ -173,6 +175,52 @@ in trenta.
 **Scene per tipo (7):** battaglia, guerra, viaggio, fondazione, scoperta,
 disastro, cultura. Ora nessun evento le usa più, ma restano: sono la rete di
 sicurezza per quelli che aggiungerai, e il controllo dice quanti sono.
+
+### Lo scoperchiamento (12 agosto 2026)
+
+Le scene erano costruite come edifici veri, con il coperchio. Ma il plastico si
+guarda da trenta gradi d'elevazione: a scheda aperta si vedeva il coperchio, e
+sotto succedeva tutto quello che nessuno vedeva mai. `check-vista.js`, tirando
+un raggio da ogni blocco in movimento verso la camera, ha misurato che **in
+media il 17,7% del movimento non arrivava all'occhio**, con 104 scene sopra un
+terzo e punte dell'85% (il Pantheon: folla e fascio di luce chiusi nel tamburo).
+
+Ora `mondoDi()` passa i blocchi fermi per `scoperchia()`, che toglie **quel che
+seppellisce l'azione, e soltanto quello**. Sepolto non vuol dire nascosto una
+volta: da un giro di camera ogni cosa finisce dietro qualcos'altro per un pezzo
+del giro, ed è la vita di un plastico. È sepolto quel che sparisce da più di
+metà degli angoli — allora vuol dire che è chiuso dentro. Media scesa al
+**10,3%**, scene sopra un terzo da 104 a 29.
+
+Le tre regole che hanno richiesto più tentativi, tutte imparate sbagliando:
+
+- **Quel che regge l'azione non si tocca.** Il tetto del Duomo porta le guglie
+  che spuntano una per volta: toglierlo perché nascondeva la folla lasciava le
+  guglie sospese sopra un plastico raso al suolo. E poggiare non è passare
+  sopra: una nota musicale che sorvola un solaio non lo rende un pilastro, per
+  cui conta solo chi torna sullo stesso punto in più istanti. Se dopo una
+  demolizione un appoggio resta per aria, la demolizione **si annulla**.
+- **Il quorum.** Un figurante solo sepolto non basta: senza quorum un unico
+  passante dentro una casa faceva demolire l'intero anello della piazza.
+- **Si toglie per intero e in modo che regga.** Una copertura va via tutta (un
+  tetto bucherellato è peggio di un tetto), un muro si abbassa su tutto il giro,
+  e chi resta appeso al vuoto scende con il resto. Le strisce larghe una cella
+  (ponti, acquedotti, cornicioni) e le cose sottili (torri, campanili, colonne,
+  alberi) non si toccano mai.
+
+**I monumenti tengono il coperchio.** Una cupola, un duomo, una volta affrescata
+*sono* la scheda: si scrive `coperchio: true` nella scena e lo scoperchiamento
+la salta — e allora l'azione va portata fuori a mano, sul sagrato. È quello che
+è successo al Pantheon: cupola intatta, il fascio di luce esce dall'oculo verso
+il cielo invece di cadere su un pavimento invisibile, i visitatori sono davanti
+al pronao.
+
+Il resto dei difetti trovati stava nelle scene, non nel motore: gente messa
+dentro le case (la folla del Duomo era centrata *dentro* la navata, i monatti
+della peste passavano attraverso una fila di case), la breccia di Caterina Sforza
+animata sopra un muro statico che non si apriva mai, il paese dell'Irpinia posato
+a y=1 su una collina alta cinque. Il banco di prova col tasto **rimetti il
+coperchio** serve a giudicarli a occhio, uno accanto all'altro.
 
 ### Il kit
 
@@ -294,6 +342,13 @@ rigenerare la geometria.
 ---
 
 ## Cosa manca / si può fare
+
+- **29 scene nascondono ancora più di un terzo del movimento** (`node
+  tools/check-vista.js`). Non è più roba da motore: è composizione, e va
+  guardata una per una nel banco di prova. Il colonnato di villa Adriana davanti
+  alle statue, il monastero di Bobbio, il teatro di Taormina, la basilica di
+  Assisi. La colonna `dentro` dice quando il problema è che i figuranti stanno
+  proprio dentro un muro: quelle si sistemano spostando la gente, non il muro.
 
 - **49 scene hanno ancora un'animazione essenziale** (`node tools/check-anim.js`):
   28 `COMPARSE` (i pezzi arrivano ma poi il quadro sta fermo), 18 `QUASI-FERMA`
